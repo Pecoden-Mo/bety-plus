@@ -33,24 +33,17 @@ const UserSchema = new mongoose.Schema(
     },
 
     // Social login IDs for customers
-    googleId: {
-      type: String,
-      unique: true,
-      sparse: true,
-      index: true,
+    provider: {
+      name: {
+        type: String,
+        enum: ['google', 'apple', 'microsoft'],
+      },
+      providerId: {
+        type: String,
+        unique: true,
+        sparse: true,
+      },
     },
-    appleId: {
-      type: String,
-      unique: true,
-      sparse: true,
-      index: true,
-    },
-    microsoftId: {
-      type: String,
-      sparse: true,
-      index: true,
-    },
-
     phoneNumber: {
       type: String,
       trim: true,
@@ -73,7 +66,7 @@ const UserSchema = new mongoose.Schema(
 
 // Compound index for social logins
 UserSchema.index(
-  { email: 1, googleId: 1, appleId: 1, microsoftId: 1 },
+  { 'provider.providerId': 1, 'provider.name': 1 },
   { unique: true, sparse: true }
 );
 

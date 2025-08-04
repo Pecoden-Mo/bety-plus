@@ -19,7 +19,7 @@ router.get(
     failureRedirect: '/login',
     session: false,
   }),
-  socialAuth.authGoogleCallback
+  socialAuth.authCallback
 );
 
 // Microsoft OAuth routes
@@ -35,7 +35,7 @@ router.get(
     failureRedirect: '/login',
     session: false,
   }),
-  socialAuth.authMicrosoftCallback
+  socialAuth.authCallback
 );
 
 export default router;

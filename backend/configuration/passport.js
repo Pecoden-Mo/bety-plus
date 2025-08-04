@@ -1,3 +1,4 @@
+import userModel from '../models/userModel.js';
 import passport from 'passport';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -16,16 +17,29 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log('Google profile:', profile);
-        const user = {
-          provider: profile.provider,
-          fullName: profile.displayName,
-          email: profile.emails[0].value,
-          image: profile.photos[0].value,
-          googleId: profile.id,
-        };
+        let user = await userModel.findOne({
+          $or: [
+            { email: profile.emails[0].value },
+            {
+              'provider.name': profile.provider,
+              'provider.providerId': profile.id,
+            },
+          ],
+        });
+        if (!user) {
+          user = await new userModel({
+            fullName: profile.displayName,
+            email: profile.emails[0].value,
+            image: profile.photos[0].value || '',
+            provider: {
+              name: profile.provider,
+              providerId: profile.id,
+            },
+          }).save({ validateBeforeSave: false });
+        }
+        if (user.password) user.password = undefined;
 
-        done(null, user);
+        return done(null, user);
       } catch (error) {
         return done(error, null);
       }
@@ -33,7 +47,6 @@ passport.use(
   )
 );
 // Passport configuration for Microsoft OAuth
-// ... (your existing Google and Apple strategies) ...
 
 passport.use(
   new MicrosoftStrategy(
@@ -46,9 +59,36 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-          console.log('Microsoft profile:', profile);
-          
-        return done(null, profile);
+        console.log('Microsoft profile:', profile);
+
+        let user = await userModel.findOne({
+          $or: [
+            { email: profile.userPrincipalName },
+            {
+              'provider.name': profile.provider,
+              'provider.providerId': profile.id,
+            },
+          ],
+        });
+        console.log('User from Microsoft auth:', user);
+
+        if (!user) {
+          user = await new userModel({
+            email: profile.userPrincipalName,
+            fullName: profile.displayName,
+            image:
+              profile.photos && profile.photos.length > 0
+                ? profile.photos[0].value
+                : '',
+            provider: {
+              name: profile.provider,
+              providerId: profile.id,
+            },
+          }).save({ validateBeforeSave: false });
+        }
+        if (user.password) user.password = undefined;
+
+        return done(null, user);
       } catch (err) {
         return done(err, null);
       }

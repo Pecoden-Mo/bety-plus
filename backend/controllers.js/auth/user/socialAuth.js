@@ -3,24 +3,13 @@ import catchAsync from '../../../utils/catchAsync.js';
 import userModel from '../../../models/userModel.js';
 import jwt from 'jsonwebtoken';
 
-const authGoogleCallback = catchAsync(async (req, res, next) => {
+const authCallback = catchAsync(async (req, res, next) => {
   if (!req.user) {
     return next(new AppError('Authentication failed try again', 401));
   }
-  let user = await userModel.findOne({
-    $or: [{ email: req.user.email }, { googleId: req.user.googleId }],
-  });
-  if (!user) {
-    const { provider, fullName, email, image, googleId } = req.user;
+  const user = req.user;
+  console.log('User from social auth:', user);
 
-    user = await new userModel({
-      //   provider,
-      fullName,
-      email,
-      image,
-      googleId,
-    }).save({ validateBeforeSave: false });
-  }
   if (user.password) user.password = undefined;
 
   const token = jwt.sign({ user }, process.env.JWT_SECRET, {
@@ -37,11 +26,9 @@ const authGoogleCallback = catchAsync(async (req, res, next) => {
     user,
   });
 });
-const authMicrosoftCallback = catchAsync(async (req, res, next) => {});
 
 export default {
-  authGoogleCallback,
-  authMicrosoftCallback,
+  authCallback,
 };
 
 /**

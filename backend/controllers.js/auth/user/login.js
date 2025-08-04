@@ -6,7 +6,11 @@ import jwt from 'jsonwebtoken';
 const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   const user = await userModel.findOne({ email }).select('+password');
-  if (!user || !(await user.comparePassword(password))) {
+
+  if (!user || !user.password) {
+    return next(new AppError('Invalid email or password', 401));
+  }
+  if (!(await user.comparePassword(password))) {
     return next(new AppError('Invalid email or password', 401));
   }
   user.password = undefined;
