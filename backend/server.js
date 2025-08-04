@@ -1,9 +1,11 @@
+import AppError from './utils/appError.js';
+import dbConnection from './configuration/dbConnection.js';
+import globalError from './middlewares/globalError.js';
 import express from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import dbConnection from './configuration/dbConnection.js';
-import globalError from './middlewares/globalError.js';
-import AppError from './utils/appError.js';
+import cookieParser from 'cookie-parser';
+import appRoute from './routers/index.js';
 
 //------------------------------------------
 dotenv.config();
@@ -12,13 +14,11 @@ const app = express();
 app.use(morgan('dev'));
 
 // routes
-app.get('/app', (req, res, _next) => {
-  // res.json({
-  //   message: 'Test',
-  // });
-  return _next(new AppError('This is my custom error message!', 404));
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
+app.use('/api/v1/', appRoute);
 // handle not found pages
 
 app.all('/{*splat}', (req, res) => {
