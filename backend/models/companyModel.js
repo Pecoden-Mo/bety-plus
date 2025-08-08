@@ -7,6 +7,7 @@ const CompanySchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+      lowercase: true,
     },
     password: {
       type: String,
@@ -19,12 +20,12 @@ const CompanySchema = new mongoose.Schema(
     },
     commercialLicenseNumber: {
       type: String,
-      required: true,
       unique: true,
       trim: true,
     },
     commercialLicensePhoto: {
-      type: String, // Storing a URL or path to the image
+      type: String,
+      // required: true, // uncomment after setting up file upload
       trim: true,
     },
     licensingAuthority: {
@@ -37,17 +38,33 @@ const CompanySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    city: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     image: {
       type: String,
       trim: true,
     },
+    role: {
+      type: String,
+      enum: ['company'],
+      default: 'company',
+    },
+    active: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
+
+CompanySchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  this.password = bcrypt.hashSync(this.password, 10);
+  next();
+});
+
+CompanySchema.methods.comparePassword = function (candidatePassword) {
+  return bcrypt.compareSync(candidatePassword, this.password);
+};
 
 export default mongoose.model('Company', CompanySchema);

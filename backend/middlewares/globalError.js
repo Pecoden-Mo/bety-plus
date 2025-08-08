@@ -3,7 +3,6 @@ import AppError from '../utils/appError.js';
 // handle duplicate key error in monogodb
 const handleDuplicateKeyError = (err) => {
   const message = `Duplicate field value: ${err.keyValue.email}. Please use another value!`;
-  console.log('Duplicate Key Error:', err.keyValue);
 
   return new AppError(message, 400);
 };
@@ -32,8 +31,6 @@ const productionError = (err, res) => {
   }
 };
 const errorHandler = (err, req, res, _next) => {
-  console.log('Error Handler:', err);
-
   const error = {
     statusCode: err.statusCode || 500,
     status: err.status || 'error',

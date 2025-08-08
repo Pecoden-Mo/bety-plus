@@ -1,7 +1,20 @@
 import { check } from 'express-validator';
 import validator from '../../middlewares/expressValidator.js';
 
-const registerValidator = [
+const register = [
+  check('fullName')
+    .trim()
+    .notEmpty()
+    .withMessage('Full name is required')
+    .isLength({ min: 3 })
+    .withMessage('Full name must be at least 3 characters long'),
+  check('jobTitle').notEmpty().withMessage('Job title is required').trim(),
+  check('phoneNumber')
+    .trim()
+    .notEmpty()
+    .withMessage('Phone number is required')
+    .isMobilePhone('ar-EG')
+    .withMessage('Please provide a valid phone number'),
   check('email')
     .toLowerCase()
     .trim()
@@ -23,7 +36,7 @@ const registerValidator = [
   validator,
 ];
 
-const loginValidator = [
+const login = [
   check('email')
     .toLowerCase()
     .trim()
@@ -31,11 +44,12 @@ const loginValidator = [
     .withMessage('Email is required')
     .isEmail()
     .withMessage('Please provide a valid email address'),
+  check('password').notEmpty().withMessage('Password is required'),
 
   validator,
 ];
 
 export default {
-  registerValidator,
-  loginValidator,
+  register,
+  login,
 };

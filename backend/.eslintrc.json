@@ -6,6 +6,16 @@
 //     "es6": true
 //   },
 //   "rules": {
+//     "import/extensions": [
+//       "error",
+//       "ignorePackages",
+//       {
+//         "js": "never",
+//         "json": "always"
+//       }
+//     ],
+
+//     "radix": "off",
 //     "sort-imports": "off",
 //     "prettier/prettier": "error",
 //     "spaced-comment": "warn",

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const UserSchema = new mongoose.Schema(
   {
@@ -31,8 +32,6 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true, // URL or path to the user's profile image
     },
-
-    // Social login IDs for customers
     provider: {
       name: {
         type: String,
@@ -44,6 +43,7 @@ const UserSchema = new mongoose.Schema(
         sparse: true,
       },
     },
+    //
     phoneNumber: {
       type: String,
       trim: true,
@@ -60,6 +60,22 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
+    resetPasswordAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lastResetRequest: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
@@ -71,14 +87,29 @@ UserSchema.index(
 );
 
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
+  if (!this.isModified('password')) return next();
+
   this.password = bcrypt.hashSync(this.password, 10);
   next();
 });
 UserSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compareSync(candidatePassword, this.password);
+};
+
+UserSchema.methods.generateResetToken = function () {
+  const token = crypto.randomBytes(32).toString('hex');
+
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+  this.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+  return token;
+};
+UserSchema.methods.clearResetToken = function () {
+  this.resetPasswordToken = null;
+  this.resetPasswordExpires = null;
+  this.resetPasswordAttempts = 0;
 };
 
 export default mongoose.model('User', UserSchema);

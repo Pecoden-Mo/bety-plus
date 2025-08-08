@@ -1,6 +1,7 @@
 import express from 'express';
-import socialAuth from '../controllers.js/auth/user/socialAuth.js';
-import '../configuration/passport.js';
+import auth from '../../controllers/user/auth/index.js';
+
+import '../../configuration/passport.js';
 import passport from 'passport';
 
 const router = express.Router();
@@ -19,7 +20,7 @@ router.get(
     failureRedirect: '/login',
     session: false,
   }),
-  socialAuth.authCallback
+  auth.social
 );
 
 // Microsoft OAuth routes
@@ -29,13 +30,14 @@ router.get(
     session: false,
   })
 );
+
 router.get(
   '/microsoft/callback',
   passport.authenticate('microsoft', {
     failureRedirect: '/login',
     session: false,
   }),
-  socialAuth.authCallback
+  auth.social
 );
 
 export default router;

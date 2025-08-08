@@ -9,6 +9,25 @@ const registerValidator = [
     .withMessage('Email is required')
     .isEmail()
     .withMessage('Please provide a valid email address'),
+  check('companyName')
+    .notEmpty()
+    .withMessage('Company name is required')
+    .isLength({ min: 3 })
+    .withMessage('Company name must be at least 3 characters long'),
+  check('commercialLicenseNumber')
+    .notEmpty()
+    .withMessage('Commercial license number is required')
+    .isLength({ min: 5 })
+    .withMessage(
+      'Commercial license number must be at least 5 characters long'
+    ),
+  check('commercialLicensePhoto').optional(), // for this time until we implement file upload
+  check('licensingAuthority')
+    .notEmpty()
+    .withMessage('Licensing authority is required'),
+  check('headOfficeAddress')
+    .notEmpty()
+    .withMessage('Head office address is required'),
   check('password')
     .notEmpty()
     .withMessage('Password is required')
