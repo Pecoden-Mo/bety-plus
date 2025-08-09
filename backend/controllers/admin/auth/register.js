@@ -5,7 +5,6 @@ import companyModel from '../../../models/companyModel.js';
 import sendToken from '../../../utils/sendToken.js';
 
 const register = catchAsync(async (req, res, next) => {
-  console.log(req.body);
 
   const { email, password, phoneNumber, jobTitle, fullName } = req.body;
 

@@ -76,6 +76,10 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    passwordChangedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
@@ -110,6 +114,22 @@ UserSchema.methods.clearResetToken = function () {
   this.resetPasswordToken = null;
   this.resetPasswordExpires = null;
   this.resetPasswordAttempts = 0;
+};
+// Method to check if the password has been changed after a specific date
+UserSchema.methods.passwordChangedAfter = function (JWTTimestamp) {
+  if (!this.passwordChangedAt) {
+    return false;
+  }
+
+  const changedTimestamp = parseInt(
+    this.passwordChangedAt.getTime() / 1000,
+    10
+  );
+
+  console.log('Token issued at:', JWTTimestamp);
+  console.log('Password changed at:', changedTimestamp);
+
+  return JWTTimestamp < changedTimestamp;
 };
 
 export default mongoose.model('User', UserSchema);

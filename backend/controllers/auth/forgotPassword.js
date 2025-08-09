@@ -1,24 +1,32 @@
 import userModel from '../../models/userModel.js';
+import companyModel from '../../models/companyModel.js';
 import emailService from '../../utils/emailService.js';
-import rateLimiter from '../../utils/rateLimiter.js';
+import rateLimiter from '../../configuration/rateLimiter.js';
 import catchAsync from '../../utils/catchAsync.js';
 import AppError from '../../utils/appError.js';
 
 const forgotPassword = catchAsync(async (req, res, next) => {
   try {
-    // try {
-    //   await rateLimiter.resetRequestLimiter.consume(req.ip);
-    // } catch (rateLimiterRes) {
-    //   return res.status(429).json({
-    //     status: 'fail',
-    //     message: 'Too many requests, please try again later.',
-    //     retryAfter: Math.round(rateLimiterRes.msBeforeNext / 1000),
-    //   });
-    // }
-    if (!req.body.email) {
+    try {
+      await rateLimiter.resetRequestLimiter.consume(req.ip);
+    } catch (rateLimiterRes) {
+      return res.status(429).json({
+        status: 'fail',
+        message: 'Too many requests, please try again later.',
+        retryAfter: Math.round(rateLimiterRes.msBeforeNext / 1000),
+      });
+    }
+    const email = req.body.email?.toLowerCase().trim();
+    console.log('Email received for password reset:', email);
+    console.log('Email received for password reset:', email);
+
+    if (!email) {
       return next(new AppError('Please provide your email address.', 400));
     }
-    const user = await userModel.findOne({ email: req.body.email });
+    const user =
+      (await companyModel.findOne({ email })) ||
+      (await userModel.findOne({ email }));
+
     if (!user) {
       return res.status(200).json({
         status: 'success',
@@ -39,7 +47,7 @@ const forgotPassword = catchAsync(async (req, res, next) => {
       await user.save({ validateBeforeSave: false });
       // Send reset email
       const emailResult = await emailService.sendResetEmail(
-        req.body.email,
+        email,
         resetToken,
         req.get('User-Agent'),
         req.ip

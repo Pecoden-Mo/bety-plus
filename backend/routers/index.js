@@ -1,7 +1,7 @@
 import userRout from './user/index.js';
 import adminRout from './admin/index.js';
 import companyRout from './company/index.js';
-import authPassword from './auth/passwordResetRoute.js';
+import authPassword from './auth/passwordRoute.js';
 
 import express from 'express';
 

@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
     status: 'success',
     message: 'Welcome to Buty Plus API',
   });
-});
+})
 app.use('/api/v1/', appRoute);
 // handle not found pages
 

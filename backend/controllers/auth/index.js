@@ -1,7 +1,9 @@
-import resetPassword from './resetPassword.js';
 import forgotPassword from './forgotPassword.js';
+import resetPassword from './resetPassword.js';
+import changePassword from './changePassword.js';
 
 export default {
-  resetPassword,
   forgotPassword,
+  resetPassword,
+  changePassword,
 };
