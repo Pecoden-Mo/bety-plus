@@ -3,12 +3,11 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import http from 'http';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { Server } from 'socket.io';
 //---------------------------------
 import appRoute from './routers/index.js';
 import globalError from './middlewares/globalError.js';
 import dbConnection from './configuration/dbConnection.js';
+import socketService from './utils/socketService.js';
 
 //------------------------------------------
 dotenv.config();
@@ -39,21 +38,12 @@ app.all('/{*splat}', (req, res) => {
 app.use(globalError);
 
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  },
-});
-io.on('connection', (socket) => {
-  console.log('Admin connected:', socket.id);
 
-  socket.on('disconnect', () => {
-    console.log('Admin disconnected:', socket.id);
-  });
-});
+// Initialize Socket.IO service
+socketService.init(server);
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is listen on ${process.env.PORT}`);
+server.listen(process.env.PORT, () => {
+  console.log(`Server is running on port ${process.env.PORT}`);
+
   dbConnection();
 });

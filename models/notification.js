@@ -1,49 +1,36 @@
 import mongoose from 'mongoose';
-//
+
 const notificationSchema = new mongoose.Schema(
   {
     recipient: {
       type: mongoose.Schema.Types.ObjectId,
-      refPath: 'recipientModel',
-      required: true,
-    },
-    recipientModel: {
-      type: String,
-      required: true,
-      enum: ['User', 'Company', 'Worker'],
-    },
-    type: {
-      type: String,
-      required: true,
-      enum: [
-        'company_registration_pending',
-        'company_approved',
-        'company_rejected',
-        'worker_added_pending',
-        'worker_approved',
-        'worker_rejected',
-        'general_message',
-      ],
-    },
-    title: {
-      type: String,
+      ref: 'User',
       required: true,
     },
     message: {
       type: String,
       required: true,
     },
-    companyId: {
+    event: {
+      type: String,
+      required: true,
+    },
+    company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company',
     },
-    workerId: {
+    worker: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'Worker',
     },
-    adminId: {
+    reservation: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'Reservation',
+    },
+    priority: {
+      type: String,
+      enum: ['low', 'normal', 'high'],
+      default: 'normal',
     },
     isRead: {
       type: Boolean,

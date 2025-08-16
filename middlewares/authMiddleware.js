@@ -15,6 +15,7 @@ export const isAuthenticated = catchAsync(async (req, res, next) => {
 
   const user = await User.findById(decoded.id);
   if (!user) {
+    res.clearCookie('token');
     return next(
       new AppError('The user belonging to this token does not exist.', 401)
     );

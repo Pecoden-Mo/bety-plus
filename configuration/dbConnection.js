@@ -7,7 +7,6 @@ const dbConnection = async () => {
     await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 30000,
     });
-    // await createIndexesSafely();
 
     console.log('Connected to Database');
   } catch (error) {

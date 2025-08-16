@@ -3,7 +3,7 @@ import catchAsync from '../../utils/catchAsync.js';
 import userModel from '../../models/userModel.js';
 import companyModel from '../../models/companyModel.js';
 import sendToken from '../../utils/sendToken.js';
-import sendNotification from '../../utils/notification.js';
+import NotificationService from '../../utils/notificationService.js';
 
 const register = catchAsync(async (req, res, next) => {
   const {
@@ -15,6 +15,7 @@ const register = catchAsync(async (req, res, next) => {
     headOfficeAddress,
     password,
   } = req.body;
+  console.log(req.body);
 
   const checkUser = await userModel.findOne({ email });
   if (checkUser) {
@@ -34,24 +35,10 @@ const register = catchAsync(async (req, res, next) => {
     headOfficeAddress,
     user: newUser._id,
   });
-  sendNotification({
-    type: 'company_registration',
-    title: 'Company Registration',
-    message:
-      'Your company has been registered successfully, waiting for approval',
-    recipient: newUser._id,
-    recipientType: 'User',
-  });
-  // send notification to admin
-  const admin = await userModel.findOne({ role: 'admin' });
-  sendNotification({
-    type: 'company_registration_pending',
-    title: 'Company Registration',
-    message: 'A new company has been registered, waiting for approval',
-    recipient: admin._id,
-    recipientType: 'User',
-    companyId: newCompany._id,
-  });
+
+  // Send notification to all admins about new company registration
+  await NotificationService.notifyCompanyRegistration(newCompany);
+
   sendToken(newCompany, res);
   res.status(201).json({
     status: 'success',
