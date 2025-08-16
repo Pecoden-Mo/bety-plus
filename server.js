@@ -6,7 +6,7 @@ import http from 'http';
 //---------------------------------
 import appRoute from './routers/index.js';
 import globalError from './middlewares/globalError.js';
-import dbConnection from './configuration/dbConnection.js';
+import dbConnection from './config/dbConnection.js';
 import socketService from './utils/socketService.js';
 
 //------------------------------------------

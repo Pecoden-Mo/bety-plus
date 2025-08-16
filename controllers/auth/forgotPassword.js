@@ -1,6 +1,6 @@
 import userModel from '../../models/userModel.js';
 import emailService from '../../utils/emailService.js';
-import rateLimiter from '../../configuration/rateLimiter.js';
+import rateLimiter from '../../config/rateLimiter.js';
 import catchAsync from '../../utils/catchAsync.js';
 import AppError from '../../utils/appError.js';
 

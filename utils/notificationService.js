@@ -96,7 +96,7 @@ class NotificationService {
     try {
       const messageData = {
         recipient: company.user,
-        message: `Your company "${company.companyName}" has been rejected`,
+        message: `Your company "${company.companyName}" has been rejected, contact support for more details ${process.env.CONTACT_US}`,
         event: 'company_rejected',
         company: company._id,
         priority: 'high',

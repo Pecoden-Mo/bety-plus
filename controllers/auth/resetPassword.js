@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import userModel from '../../models/userModel.js';
-import rateLimiter from '../../configuration/rateLimiter.js';
+import rateLimiter from '../../config/rateLimiter.js';
 import catchAsync from '../../utils/catchAsync.js';
 import AppError from '../../utils/appError.js';
 
