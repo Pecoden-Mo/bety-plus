@@ -1,17 +1,18 @@
 import express from 'express';
-import userRout from './user/index.js';
-import adminRout from './admin/index.js';
-import companyRout from './company/index.js';
-import authRoute from './auth/auth.route.js';
+import userRouts from './user/index.js';
+import adminRouts from './admin/index.js';
+import companyRouts from './company/index.js';
+import authRoutes from './auth/auth.route.js';
 import notificationRoutes from './notification/index.js';
+import workerRoute from './worker.route.js';
 // import adminCompanyRoutes from './admin/companyManagement.js';
 
 const router = express.Router();
-router.use('/auth', authRoute);
-router.use('/users', userRout);
-router.use('/admins', adminRout);
-router.use('/companies', companyRout);
+router.use('/auth', authRoutes);
+router.use('/users', userRouts);
+router.use('/admins', adminRouts);
+router.use('/companies', companyRouts);
 router.use('/notifications', notificationRoutes);
-// router.use('/admin', adminCompanyRoutes);
+router.use('/workers', workerRoute);
 
 export default router;

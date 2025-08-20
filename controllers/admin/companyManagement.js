@@ -17,7 +17,7 @@ export const approveCompany = catchAsync(async (req, res, next) => {
     return next(new AppError('Company not found', 404));
   }
 
-  if (company.status !== 'pending') {
+  if (company.status === 'approved') {
     return next(new AppError('Company is already processed', 400));
   }
 
@@ -45,15 +45,13 @@ export const rejectCompany = catchAsync(async (req, res, next) => {
   const adminId = req.user._id;
 
   // Find the company
-  const company = await companyModel
-    .findById(id)
-    .populate('user', 'email fullName');
+  const company = await companyModel.findById(id).populate('user', 'email');
 
   if (!company) {
     return next(new AppError('Company not found', 404));
   }
 
-  if (company.status !== 'pending') {
+  if (company.status === 'rejected') {
     return next(new AppError('Company is already processed', 400));
   }
 
@@ -82,7 +80,7 @@ export const getPendingCompanies = catchAsync(async (req, res, next) => {
 
   const companies = await companyModel
     .find({ status: 'pending' })
-    .populate('user', 'email fullName')
+    .populate('user', 'email ')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(parseInt(limit));
@@ -105,23 +103,93 @@ export const getPendingCompanies = catchAsync(async (req, res, next) => {
 
 // Get all companies with their status
 export const getAllCompanies = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 10, status } = req.query;
+  const { page = 1, limit = 10, status, search } = req.query;
   const skip = (page - 1) * limit;
 
-  const filter = {};
+  const pipeline = [];
+
+  // Add lookup to join with user data
+  pipeline.push({
+    $lookup: {
+      from: 'users',
+      localField: 'user',
+      foreignField: '_id',
+      as: 'user',
+    },
+  });
+
+  // Unwind user array
+  pipeline.push({
+    $unwind: '$user',
+  });
+
+  // Add lookup to join with approvedBy admin data
+  pipeline.push({
+    $lookup: {
+      from: 'users',
+      localField: 'approvedBy',
+      foreignField: '_id',
+      as: 'approvedBy',
+    },
+  });
+
+  // Unwind approvedBy array (optional - only if approvedBy exists)
+  pipeline.push({
+    $unwind: {
+      path: '$approvedBy',
+      preserveNullAndEmptyArrays: true,
+    },
+  });
+
+  // Build match filter
+  const matchFilter = {};
   if (status) {
-    filter.status = status;
+    matchFilter.status = status;
+  }
+  if (search) {
+    matchFilter.$or = [
+      { companyName: { $regex: search, $options: 'i' } },
+      { commercialLicenseNumber: { $regex: search, $options: 'i' } },
+      { licensingAuthority: { $regex: search, $options: 'i' } },
+      { headOfficeAddress: { $regex: search, $options: 'i' } },
+      { 'user.email': { $regex: search, $options: 'i' } },
+    ];
   }
 
-  const companies = await companyModel
-    .find(filter)
-    .populate('user', 'email fullName')
-    .populate('approvedBy', 'email fullName')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(parseInt(limit));
+  pipeline.push({ $match: matchFilter });
 
-  const total = await companyModel.countDocuments(filter);
+  // Add sorting
+  pipeline.push({ $sort: { createdAt: -1 } });
+
+  // Get total count
+  const totalPipeline = [...pipeline, { $count: 'total' }];
+  const totalResult = await companyModel.aggregate(totalPipeline);
+  const total = totalResult.length > 0 ? totalResult[0].total : 0;
+
+  // Add pagination
+  pipeline.push({ $skip: skip });
+  pipeline.push({ $limit: parseInt(limit) });
+
+  // Project only needed user fields
+  pipeline.push({
+    $project: {
+      companyName: 1,
+      commercialLicenseNumber: 1,
+      licensingAuthority: 1,
+      headOfficeAddress: 1,
+      status: 1,
+      approvalDate: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      'user._id': 1,
+      'user.email': 1,
+      'approvedBy._id': 1,
+      'approvedBy.email': 1,
+      'approvedBy.fullName': 1,
+    },
+  });
+
+  const companies = await companyModel.aggregate(pipeline);
 
   res.status(200).json({
     status: 'success',

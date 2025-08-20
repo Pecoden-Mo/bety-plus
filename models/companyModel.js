@@ -50,5 +50,12 @@ const CompanySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+CompanySchema.virtual('workers', {
+  ref: 'Worker',
+  localField: '_id',
+  foreignField: 'company',
+  // count: true,
+  // match:{ status: 'active' // Optional: filter workers by status}
+});
 
 export default mongoose.model('Company', CompanySchema);

@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema(
   {
     email: {
       type: String,
-      required: true,
+      required: [true, 'Email is required'],
       unique: true,
       trim: true,
       lowercase: true,
@@ -86,9 +86,15 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Compound index for social logins
+// Compound index for social logins
 UserSchema.index(
   { 'provider.providerId': 1, 'provider.name': 1 },
-  { unique: true, sparse: true }
+  {
+    unique: true,
+    partialFilterExpression: {
+      'provider.providerId': { $exists: true, $ne: null },
+    },
+  }
 );
 
 UserSchema.pre('save', async function (next) {

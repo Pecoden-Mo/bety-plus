@@ -13,9 +13,9 @@ const router = express.Router();
 router.use(isAuthenticated);
 
 // Admin company management routes
-router.get('/companies', getAllCompanies);
-router.get('/companies/pending', getPendingCompanies);
-router.patch('/companies/:id/approve', approveCompany);
-router.patch('/companies/:id/reject', rejectCompany);
-
+router.get('/', getAllCompanies);
+router.get('/pending', getPendingCompanies); // not imported in the previous code
+router.patch('/:id/approve', approveCompany);
+router.patch('/:id/reject', rejectCompany);
+// toggle status of a company
 export default router;

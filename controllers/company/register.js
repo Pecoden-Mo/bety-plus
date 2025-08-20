@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import AppError from '../../utils/appError.js';
 import catchAsync from '../../utils/catchAsync.js';
 import userModel from '../../models/userModel.js';
@@ -15,37 +16,70 @@ const register = catchAsync(async (req, res, next) => {
     headOfficeAddress,
     password,
   } = req.body;
+
   console.log(req.body);
 
+  // Check if user already exists
   const checkUser = await userModel.findOne({ email });
   if (checkUser) {
     return next(new AppError('Email already exists', 400));
   }
-  const newUser = await userModel.create({
-    email,
-    password,
-    role: 'company',
-  });
-  newUser.password = undefined;
-  const newCompany = await companyModel.create({
-    companyName,
-    commercialLicenseNumber,
-    commercialLicensePhoto,
-    licensingAuthority,
-    headOfficeAddress,
-    user: newUser._id,
-  });
 
-  // Send notification to all admins about new company registration
-  await NotificationService.notifyCompanyRegistration(newCompany);
+  const session = await mongoose.startSession();
 
-  sendToken(newCompany, res);
-  res.status(201).json({
-    status: 'success',
-    data: {
-      company: newCompany,
-    },
-  });
+  try {
+    session.startTransaction();
+
+    const [newUser] = await userModel.create(
+      [
+        {
+          email,
+          password,
+          role: 'company',
+        },
+      ],
+      { session }
+    );
+
+    const userResponse = newUser.toObject();
+    delete userResponse.password;
+
+    const [newCompany] = await companyModel.create(
+      [
+        {
+          companyName,
+          commercialLicenseNumber,
+          commercialLicensePhoto,
+          licensingAuthority,
+          headOfficeAddress,
+          user: newUser._id,
+        },
+      ],
+      { session }
+    );
+    await session.commitTransaction();
+
+    try {
+      await NotificationService.notifyCompanyRegistration(newCompany);
+    } catch (notificationError) {
+      console.error('Failed to send notification:', notificationError);
+    }
+
+    sendToken(newUser, res);
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        user: userResponse,
+        company: newCompany,
+      },
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    return next(new AppError(error, 500));
+  } finally {
+    session.endSession();
+  }
 });
 
 export default register;

@@ -1,0 +1,117 @@
+import mongoose from 'mongoose';
+import AppError from '../utils/appError.js';
+
+const workerSchema = new mongoose.Schema({
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: [true, 'Company is required'],
+    index: true,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Created by user is required'],
+    index: true,
+  },
+  fullName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  age: {
+    type: Number,
+    required: true,
+  },
+  nationality: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  maritalStatus: {
+    type: String,
+    required: true,
+    enum: ['Single', 'Married', 'Divorced', 'Widowed'],
+  },
+  childrenNumber: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  religion: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  arrivalTime: {
+    type: Date,
+    required: true,
+  },
+  skills: {
+    type: [String],
+    required: true,
+    enum: [
+      'cooking',
+      'cleaning',
+      'elderly care',
+      'childcare',
+      'shopping',
+      'other Tasks',
+    ],
+    trim: true,
+  },
+
+  yearsExperience: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  language: {
+    type: [String],
+    required: true,
+    trim: true,
+  },
+  pictureWorker: {
+    type: String,
+    // required: true,
+  },
+  introductoryVideo: String,
+  availability: {
+    type: String,
+    required: true,
+    enum: ['currently available', 'reserved', 'waiting for update'],
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending',
+  },
+});
+workerSchema.index({ company: 1, status: 1 });
+workerSchema.index({ company: 1, availability: 1 });
+workerSchema.index({ nationality: 1 });
+workerSchema.index({ skills: 1 });
+
+workerSchema.pre('save', async function (next) {
+  if (!this.isNew) return next();
+  try {
+    const company = await mongoose.model('Company').findById(this.company);
+    if (!company) {
+      return next(new AppError('Company not found', 404));
+    }
+    if (company.status !== 'approved') {
+      return next(
+        new AppError('Company must be approved before adding workers', 400)
+      );
+    }
+    next();
+  } catch (error) {
+    console.error(
+      'Error checking company status ~ File:workerModel-110',
+      error
+    );
+    return next(new AppError('Error checking company status', 500));
+  }
+});
+
+export default mongoose.model('Worker', workerSchema, 'workers');
