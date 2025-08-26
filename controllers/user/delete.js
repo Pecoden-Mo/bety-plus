@@ -5,6 +5,7 @@ import userModel from '../../models/userModel.js';
 
 // this route only for customer
 // fullName  phoneNumber city area street only can updated
+// TODO if user have reservation do not allow deletion and worker are reserved do not allow deletion
 const deleteMe = catchAsync(async (req, res, next) => {
   const user = await userModel.findOneAndDelete({
     _id: req.user.id,

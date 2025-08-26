@@ -41,7 +41,7 @@ const workerSchema = new mongoose.Schema({
   religion: {
     type: String,
     required: true,
-    trim: true,
+    enum: ['Islam', 'Christianity', 'Other'],
   },
   arrivalTime: {
     type: Date,
@@ -59,6 +59,31 @@ const workerSchema = new mongoose.Schema({
       'other Tasks',
     ],
     trim: true,
+  },
+  location: {
+    type: String,
+    required: true,
+    trim: true,
+    enum: [
+      'Dubai',
+      'Abu Dhabi',
+      'Sharjah',
+      'Ajman',
+      'Ras Al Khaimah',
+      'Fujairah',
+      'Umm Al Quwain',
+      'Riyadh',
+      'Jeddah',
+      'Dammam',
+      'Mecca',
+      'Medina',
+      'Kuwait City',
+      'Doha',
+      'Manama',
+      'Muscat',
+      'Other',
+    ],
+    index: true,
   },
 
   yearsExperience: {

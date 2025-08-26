@@ -1,6 +1,7 @@
 import catchAsync from '../../utils/catchAsync.js';
 import AppError from '../../utils/appError.js';
 import companyModel from '../../models/companyModel.js';
+import NotificationService from '../../utils/notificationService.js';
 
 export default catchAsync(async (req, res, next) => {
   const userId = req.user.id;
@@ -20,21 +21,32 @@ export default catchAsync(async (req, res, next) => {
       updateData[key] = data[key];
     }
   });
-
+  // If commercialLicensePhoto is being updated, set status to 'pending'
+  let message = 'Company updated successfully';
+  if (updateData.commercialLicensePhoto) {
+    updateData.status = 'pending';
+    message = 'Company updated successfully and is pending re-approval';
+  }
   const company = await companyModel
     .findOneAndUpdate({ user: userId }, updateData, {
       new: true,
       runValidators: true,
     })
-    .populate('user', 'email fullName')
-    .populate('approvedBy', 'email fullName');
+    .select('-approvedBy -approvalDate   -updatedAt -__v')
+    .populate('user', 'email');
 
   if (!company) {
     return next(new AppError('Company not found for this user', 404));
   }
+  try {
+    await NotificationService.notifyCompanyUpdate(company);
+  } catch (notificationError) {
+    console.error('Failed to send notification:', notificationError);
+  }
 
   res.status(200).json({
     status: 'success',
+    message,
     data: {
       company,
     },
