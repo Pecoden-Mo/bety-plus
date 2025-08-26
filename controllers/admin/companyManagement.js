@@ -204,3 +204,5 @@ export const getAllCompanies = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+export const getCompany = catchAsync(async (req, res, next) => {});

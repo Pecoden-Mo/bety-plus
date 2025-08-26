@@ -1,1 +1,7 @@
-// TODO ONLY FOR USER IN HOME PAGE
+import getAll from './getAll.js';
+import getOne from './getOne.js';
+
+export default {
+  getAll,
+  getOne,
+};

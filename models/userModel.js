@@ -86,7 +86,6 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Compound index for social logins
-// Compound index for social logins
 UserSchema.index(
   { 'provider.providerId': 1, 'provider.name': 1 },
   {
@@ -100,7 +99,7 @@ UserSchema.index(
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
-  this.password = bcrypt.hashSync(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 UserSchema.methods.comparePassword = function (candidatePassword) {

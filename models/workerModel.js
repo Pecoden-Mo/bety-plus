@@ -80,6 +80,7 @@ const workerSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: ['currently available', 'reserved', 'waiting for update'],
+    default: 'currently available',
   },
   status: {
     type: String,

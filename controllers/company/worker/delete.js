@@ -1,14 +1,15 @@
 import catchAsync from '../../../utils/catchAsync.js';
 import AppError from '../../../utils/appError.js';
 import workerModel from '../../../models/workerModel.js';
+import companyModel from '../../../models/companyModel.js';
 
 export default catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const companyId = req.user.company;
+  const company = await companyModel.findOne({ user: req.user.id });
 
   const worker = await workerModel.findOneAndDelete({
     _id: id,
-    company: companyId,
+    company: company._id,
   });
 
   if (!worker) {
@@ -20,7 +21,3 @@ export default catchAsync(async (req, res, next) => {
     data: null,
   });
 });
-// TODO
-// Add validation to ensure the worker exists before attempting to delete
-// Consider adding a check to ensure the user has permission to delete the worker
-// Add logging for the deletion action if necessary

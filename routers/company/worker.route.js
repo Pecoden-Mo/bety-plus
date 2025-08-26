@@ -4,11 +4,10 @@ import workerValidate from '../../utils/validator/workerValidate.js';
 
 const router = express.Router();
 
-// Worker CRUD routes for companies
 router
   .route('/')
-  .get(workerCon.getAll)
-  .post(workerValidate.create, workerCon.create);
+  .get(workerCon.getAll) // GET /api/companies/workers
+  .post(workerValidate.create, workerCon.create); // POST /api/companies/workers
 
 router
   .route('/:id')

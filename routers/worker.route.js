@@ -1,5 +1,5 @@
 import express from 'express';
-import workerCon from '../controllers/company/worker/index.js';
+import workerCon from '../controllers/worker/index.js';
 
 const router = express.Router();
 
