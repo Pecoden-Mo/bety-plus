@@ -5,6 +5,7 @@ import companyRouts from './company/index.js';
 import authRoutes from './auth/auth.route.js';
 import notificationRoutes from './notification/index.js';
 import workerRoute from './worker.route.js';
+import paymentRouter from './payment/index.js';
 // import adminCompanyRoutes from './admin/companyManagement.js';
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.use('/admins', adminRouts);
 router.use('/companies', companyRouts);
 router.use('/notifications', notificationRoutes);
 router.use('/workers', workerRoute);
+router.use('/payments', paymentRouter);
 
 export default router;

@@ -77,6 +77,11 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    stripeCustomerId: {
+      type: String,
+      sparse: true,
+      index: true,
+    },
     passwordChangedAt: {
       type: Date,
       default: null,

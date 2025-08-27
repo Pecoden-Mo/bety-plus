@@ -27,8 +27,8 @@ app.get('/', (req, res) => {
   });
 });
 app.use('/api/v1/', appRoute);
-// handle not found pages
 
+// handle not found pages
 app.all('/{*splat}', (req, res) => {
   res.status(404).json({
     status: 'fail',
