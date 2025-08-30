@@ -2,6 +2,7 @@ import express from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import http from 'http';
 //---------------------------------
 import appRoute from './routers/index.js';
@@ -15,6 +16,23 @@ const app = express();
 
 app.use(morgan('dev'));
 
+// CORS Configuration
+// const corsOrigins = process.env.CORS_ORIGINS
+//   ? process.env.CORS_ORIGINS.split(',')
+//   : ['http://localhost:3020'];
+
+app.use(
+  cors({
+    origin: '*',
+    credentials: true, // Allow cookies to be sent
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  })
+);
+
+// Serve static files
+// app.use('/test', express.static('public'));
+
 // routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,6 +44,22 @@ app.get('/', (req, res) => {
     message: 'Welcome to Buty Plus API',
   });
 });
+
+// CORS test endpoint
+app.get('/cors-test', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'CORS is working correctly! 🎉',
+    origin: req.headers.origin,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Serve login test page
+app.get('/login-test', (req, res) => {
+  res.sendFile('test-login.html', { root: './public' });
+});
+
 app.use('/api/v1/', appRoute);
 
 // handle not found pages

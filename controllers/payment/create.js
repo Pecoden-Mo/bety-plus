@@ -6,6 +6,10 @@ import UserModel from '../../models/userModel.js';
 import StripeService from '../../services/stripeService.js';
 import PricingService from '../../services/pricingService.js';
 
+/* TODO Sent notification to company
+ * and admin on new payment request
+ * also to user on payment success to chat in whatsapp admin
+ */
 export default catchAsync(async (req, res, next) => {
   const { workerId, serviceType = 'housemaid' } = req.body;
   const userId = req.user.id;
