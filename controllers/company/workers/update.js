@@ -24,8 +24,7 @@ export default catchAsync(async (req, res, next) => {
     language: req.body.language,
     pictureWorker: req.body.pictureWorker,
     introductoryVideo: req.body.introductoryVideo,
-    availability: req.body.availability,
-    status: req.body.status,
+    price: req.body.price,
   };
 
   // Filter out undefined values to only update provided fields

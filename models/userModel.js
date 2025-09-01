@@ -18,10 +18,6 @@ const UserSchema = new mongoose.Schema(
       required: [true, 'Password is required'],
       select: false,
     },
-    fullName: {
-      type: String,
-      trim: true,
-    },
     role: {
       type: String,
       required: true,
@@ -44,10 +40,20 @@ const UserSchema = new mongoose.Schema(
         sparse: true,
       },
     },
-    //
-    phoneNumber: {
+    fullName: {
       type: String,
+      required: true,
       trim: true,
+    },
+    phoneNumber: {
+      primaryPhone: {
+        type: String,
+        trim: true,
+      },
+      secondaryPhone: {
+        type: String,
+        trim: true,
+      },
     },
     city: {
       type: String,
@@ -61,6 +67,21 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    nationality: {
+      type: String,
+      trim: true,
+    },
+    idPassportImage: {
+      type: String,
+      trim: true,
+    },
+
+    houseNumber: {
+      type: String,
+      trim: true,
+    },
+
+    // for password reset
     resetPasswordToken: {
       type: String,
       default: null,

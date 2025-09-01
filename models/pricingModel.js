@@ -20,7 +20,6 @@ const pricingSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
-      // only in case of worker in UAE
       deliveryFee: {
         type: Number,
         default: 0,

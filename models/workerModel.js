@@ -2,6 +2,12 @@ import mongoose from 'mongoose';
 import AppError from '../utils/appError.js';
 
 const workerSchema = new mongoose.Schema({
+  // Price set by the company for this worker
+  price: {
+    type: Number,
+    required: [true, 'Price is required'],
+    min: 0,
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
@@ -85,10 +91,7 @@ const workerSchema = new mongoose.Schema({
     ],
     index: true,
   },
-  isInside: {
-    type: Boolean,
-    required: true,
-  },
+
   yearsExperience: {
     type: Number,
     required: true,
@@ -114,6 +117,10 @@ const workerSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending',
+  },
+  isInside: {
+    type: Boolean,
+    required: true,
   },
 });
 workerSchema.index({ company: 1, status: 1 });
