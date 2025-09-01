@@ -3,61 +3,46 @@ import WorkerModel from '../models/workerModel.js';
 import AppError from '../utils/appError.js';
 
 class PricingService {
-  static async calculatePrice(worker, serviceType = 'housemaid') {
+  // Helper method to determine region based on worker's isInside property
+  static getRegion(isInside) {
+    return isInside ? 'UAE' : 'Outside_UAE';
+  }
+
+  static async calculatePrice(worker) {
     try {
+      const region = this.getRegion(worker.isInside);
+
       const pricing = await PricingModel.findOne({
-        serviceType,
+        region,
         isActive: true,
       });
 
       if (!pricing) {
-        throw new AppError('Pricing not found for this service', 404);
+        throw new AppError(`Pricing not found for region: ${region}`, 404);
       }
 
-      let finalPrice = pricing.basePrice;
-      const appliedMultipliers = {};
+      // Calculate total fees based on region
+      let totalFees = pricing.fees.serviceFee || 0;
 
-      // Location-based pricing
-      const locationMultiplier =
-        pricing.locationMultiplier.get(worker.currentLocation) || 1.0;
-      finalPrice *= locationMultiplier;
-      appliedMultipliers.location = locationMultiplier;
-
-      // Experience-based pricing
-      const experienceLevel = this.getExperienceLevel(worker.yearsExperience);
-      const experienceMultiplier =
-        pricing.experienceMultiplier.get(experienceLevel) || 1.0;
-      finalPrice *= experienceMultiplier;
-      appliedMultipliers.experience = experienceMultiplier;
-
-      // Round to nearest dirham
-      finalPrice = Math.round(finalPrice);
+      // Add delivery fee only for UAE workers
+      if (worker.isInside) {
+        totalFees += pricing.fees.deliveryFee || 0;
+      }
 
       const pricingBreakdown = {
-        basePrice: finalPrice,
-        guaranteeFee: pricing.fees.guaranteeFee,
-        serviceFee: pricing.fees.serviceFee,
-        deliveryFee: pricing.fees.deliveryFee,
-        totalAmount:
-          finalPrice +
-          pricing.fees.guaranteeFee +
-          pricing.fees.serviceFee +
-          pricing.fees.deliveryFee,
+        region,
+        isInside: worker.isInside,
+        serviceFee: pricing.fees.serviceFee || 0,
+        deliveryFee: worker.isInside ? pricing.fees.deliveryFee || 0 : 0,
+        totalFees,
         currency: pricing.currency,
-        appliedMultipliers,
+        workerLocation: worker.location,
       };
 
       return pricingBreakdown;
     } catch (error) {
       throw new AppError(`Pricing calculation failed: ${error.message}`, 400);
     }
-  }
-
-  static getExperienceLevel(years) {
-    if (years <= 2) return '0-2';
-    if (years <= 5) return '3-5';
-    if (years <= 10) return '6-10';
-    return '10+';
   }
 
   static async getPricingQuote(workerId) {
@@ -77,11 +62,49 @@ class PricingService {
         id: worker._id,
         name: worker.fullName,
         company: worker.company.companyName,
-        location: worker.currentLocation,
+        location: worker.location,
+        isInside: worker.isInside,
         experience: worker.yearsExperience,
         skills: worker.skills,
       },
       pricing,
+    };
+  }
+
+  // Helper method to get all active pricing
+  static async getAllPricing() {
+    try {
+      return await PricingModel.find({ isActive: true });
+    } catch (error) {
+      throw new AppError(`Error fetching pricing: ${error.message}`, 400);
+    }
+  }
+
+  // Helper method to validate worker pricing setup
+  static async validateWorkerPricing(worker) {
+    const region = this.getRegion(worker.isInside);
+    const pricing = await PricingModel.findOne({
+      region,
+      isActive: true,
+    });
+
+    return {
+      worker: {
+        location: worker.location,
+        isInside: worker.isInside,
+        determinedRegion: region,
+      },
+      pricingExists: !!pricing,
+      pricing: pricing
+        ? {
+            basePrice: pricing.basePrice,
+            totalFees:
+              (pricing.fees.guaranteeFee || 0) +
+              (pricing.fees.serviceFee || 0) +
+              (pricing.fees.deliveryFee || 0),
+            currency: pricing.currency,
+          }
+        : null,
     };
   }
 }

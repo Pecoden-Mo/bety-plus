@@ -2,16 +2,12 @@ import mongoose from 'mongoose';
 
 const pricingSchema = new mongoose.Schema(
   {
-    serviceType: {
+    region: {
       type: String,
       required: true,
-      enum: ['housemaid', 'nanny', 'elderly_care', 'cook', 'cleaner', 'driver'],
+      enum: ['UAE', 'Outside_UAE'],
+      unique: true,
       index: true,
-    },
-    basePrice: {
-      type: Number,
-      required: true,
-      min: 0,
     },
     currency: {
       type: String,
@@ -19,38 +15,15 @@ const pricingSchema = new mongoose.Schema(
       enum: ['AED', 'USD', 'SAR', 'KWD', 'QAR'],
     },
     fees: {
-      guaranteeFee: {
-        type: Number,
-        default: 1500,
-      },
       serviceFee: {
+        // when worker in UAE also if it outside uae
         type: Number,
-        default: 100,
+        default: 0,
       },
+      // only in case of worker in UAE
       deliveryFee: {
         type: Number,
-        default: 50,
-      },
-    },
-    locationMultiplier: {
-      type: Map,
-      of: Number,
-      default: {
-        Dubai: 1.2,
-        'Abu Dhabi': 1.15,
-        Sharjah: 1.0,
-        Ajman: 0.95,
-        Other: 1.0,
-      },
-    },
-    experienceMultiplier: {
-      type: Map,
-      of: Number,
-      default: {
-        '0-2': 1.0,
-        '3-5': 1.15,
-        '6-10': 1.3,
-        '10+': 1.5,
+        default: 0,
       },
     },
     isActive: {

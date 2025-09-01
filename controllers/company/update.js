@@ -1,7 +1,7 @@
 import catchAsync from '../../utils/catchAsync.js';
 import AppError from '../../utils/appError.js';
 import companyModel from '../../models/companyModel.js';
-import NotificationService from '../../utils/notificationService.js';
+import NotificationService from '../../services/notificationService.js';
 
 export default catchAsync(async (req, res, next) => {
   const userId = req.user.id;

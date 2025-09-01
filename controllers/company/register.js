@@ -4,7 +4,7 @@ import catchAsync from '../../utils/catchAsync.js';
 import userModel from '../../models/userModel.js';
 import companyModel from '../../models/companyModel.js';
 import sendToken from '../../utils/sendToken.js';
-import NotificationService from '../../utils/notificationService.js';
+import NotificationService from '../../services/notificationService.js';
 
 const register = catchAsync(async (req, res, next) => {
   const {

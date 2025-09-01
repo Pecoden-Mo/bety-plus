@@ -1,4 +1,4 @@
-import NotificationService from '../../utils/notificationService.js';
+import NotificationService from '../../services/notificationService.js';
 import catchAsync from '../../utils/catchAsync.js';
 import AppError from '../../utils/appError.js';
 

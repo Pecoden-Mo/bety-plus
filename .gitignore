@@ -1,3 +1,5 @@
 node_modules/
 .env
 simple-test.html
+ecosystem.config.cjs
+logs/

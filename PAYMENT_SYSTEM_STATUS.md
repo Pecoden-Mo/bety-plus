@@ -30,8 +30,8 @@
    - ✅ `controllers/payment/getUserPayments.js` - Payment history
 
 6. **🛡️ Validation & Routes**
-   - ✅ `utils/validator/paymentValidate.js` - Input validation
-   - ✅ `routers/payment/index.js` - Payment routes
+   - ✅ `utils/validators/paymentValidate.js` - Input validation
+   - ✅ `routes/payment/index.js` - Payment routes
    - ✅ Integrated into main router
 
 ### 🚀 **API Endpoints Ready:**

@@ -4,46 +4,51 @@ import PricingModel from '../models/pricingModel.js';
 
 dotenv.config({ path: '../.env' });
 
-const seedPricing = async () => {
+const seedPricingByRegion = async () => {
   try {
-    console.log('Connecting to DB...', process.env.MONGO_URI);
-
     await mongoose.connect(process.env.MONGO_URI);
 
-    const pricingData = {
-      serviceType: 'housemaid',
-      basePrice: 5250,
-      currency: 'AED',
-      fees: {
-        guaranteeFee: 1500,
-        serviceFee: 100,
-        deliveryFee: 50,
-      },
-      locationMultiplier: new Map([
-        ['Dubai', 1.2],
-        ['Abu Dhabi', 1.15],
-        ['Sharjah', 1.0],
-        ['Ajman', 0.95],
-        ['Other', 1.0],
-      ]),
-      experienceMultiplier: new Map([
-        ['0-2', 1.0],
-        ['3-5', 1.15],
-        ['6-10', 1.3],
-        ['10+', 1.5],
-      ]),
-      isActive: true,
-    };
-
+    // Clear existing pricing data
     await PricingModel.deleteMany({});
-    const pricing = await PricingModel.create(pricingData);
-    console.log(pricing);
 
-    // process.exit(0);
+    // Simple pricing data - one price per region
+    const pricingData = [
+      {
+        region: 'UAE',
+        currency: 'AED',
+        fees: {
+          serviceFee: 100,
+          deliveryFee: 50,
+        },
+        isActive: true,
+      },
+      {
+        region: 'Outside_UAE',
+        currency: 'AED',
+        fees: {
+          serviceFee: 80,
+          deliveryFee: 0, // No delivery fee outside UAE
+        },
+        isActive: true,
+      },
+    ];
+
+    // Insert pricing data
+    const createdPricing = await PricingModel.insertMany(pricingData);
+    console.log(`✅ Created ${createdPricing.length} pricing records`);
+
+    // Display created records
+    createdPricing.forEach((pricing) => {
+      console.log(
+        `${pricing.region}: ${pricing.basePrice} ${pricing.currency}`
+      );
+    });
+
+    console.log('✅ Pricing data seeded successfully');
   } catch (error) {
-    console.log(error);
+    console.error('❌ Error seeding pricing:', error);
     process.exit(1);
   }
 };
 
-seedPricing();
+seedPricingByRegion();

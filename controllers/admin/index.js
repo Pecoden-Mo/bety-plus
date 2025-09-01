@@ -4,7 +4,7 @@ import {
   rejectCompany,
   getPendingCompanies,
   getAllCompanies,
-} from './companyManagement.js';
+} from './company.js';
 
 export default {
   create,

@@ -85,7 +85,10 @@ const workerSchema = new mongoose.Schema({
     ],
     index: true,
   },
-
+  isInside: {
+    type: Boolean,
+    required: true,
+  },
   yearsExperience: {
     type: Number,
     required: true,
@@ -129,6 +132,20 @@ workerSchema.pre('save', async function (next) {
       return next(
         new AppError('Company must be approved before adding workers', 400)
       );
+    }
+    const UAE = [
+      'Dubai',
+      'Abu Dhabi',
+      'Sharjah',
+      'Ajman',
+      'Ras Al Khaimah',
+      'Fujairah',
+      'Umm Al Quwain',
+    ];
+    if (UAE.includes(this.location)) {
+      this.isInside = true;
+    } else {
+      this.isInside = false;
     }
     next();
   } catch (error) {

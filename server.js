@@ -5,10 +5,10 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import http from 'http';
 //---------------------------------
-import appRoute from './routers/index.js';
-import globalError from './middlewares/globalError.js';
+import appRoute from './routes/index.js';
+import globalError from './middleware/globalError.js';
 import dbConnection from './config/dbConnection.js';
-import socketService from './utils/socketService.js';
+import socketService from './services/socketService.js';
 
 //------------------------------------------
 dotenv.config();
@@ -30,9 +30,6 @@ app.use(
   })
 );
 
-// Serve static files
-// app.use('/test', express.static('public'));
-
 // routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -53,11 +50,6 @@ app.get('/cors-test', (req, res) => {
     origin: req.headers.origin,
     timestamp: new Date().toISOString(),
   });
-});
-
-// Serve login test page
-app.get('/login-test', (req, res) => {
-  res.sendFile('test-login.html', { root: './public' });
 });
 
 app.use('/api/v1/', appRoute);
