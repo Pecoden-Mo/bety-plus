@@ -27,11 +27,17 @@ const update = [
   check().custom((value, { req }) => {
     const allowed = [
       'fullName',
-      'phoneNumber',
+      'primaryPhone',
+      'secondaryPhone',
       'city',
       'area',
       'street',
       'image',
+      'nationality',
+      'houseNumber',
+      'apartmentNumber',
+      'emirate',
+      'idPassportImage',
     ];
     const hasAny = allowed.some(
       (f) =>
@@ -49,13 +55,53 @@ const update = [
     .trim()
     .isLength({ min: 2, max: 100 })
     .withMessage('Your name must be between 2 and 100 characters'),
-  check('phoneNumber')
+  check('primaryPhone')
     .optional()
     .isString()
-    .withMessage('Your phone number must be a string')
+    .withMessage('Primary phone number must be a string')
     .trim()
     .isLength({ min: 7, max: 20 })
-    .withMessage('Your phone number must be between 7 and 20 characters'),
+    .withMessage('Primary phone number must be between 7 and 20 characters'),
+  check('secondaryPhone')
+    .optional()
+    .isString()
+    .withMessage('Secondary phone number must be a string')
+    .trim()
+    .isLength({ min: 7, max: 20 })
+    .withMessage('Secondary phone number must be between 7 and 20 characters'),
+  check('nationality')
+    .optional()
+    .isString()
+    .withMessage('Nationality must be a string')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Nationality must be between 2 and 50 characters'),
+  check('emirate')
+    .optional()
+    .isString()
+    .withMessage('Emirate must be a string')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Emirate must be between 2 and 50 characters'),
+  check('houseNumber')
+    .optional()
+    .isString()
+    .withMessage('House number must be a string')
+    .trim()
+    .isLength({ min: 1, max: 20 })
+    .withMessage('House number must be between 1 and 20 characters'),
+  check('apartmentNumber')
+    .optional()
+    .isString()
+    .withMessage('Apartment number must be a string')
+    .trim()
+    .isLength({ min: 1, max: 20 })
+    .withMessage('Apartment number must be between 1 and 20 characters'),
+  check('idPassportImage')
+    .optional()
+    .isString()
+    .withMessage('ID/Passport image must be a string')
+    .trim(),
   check('city')
     .optional()
     .isString()

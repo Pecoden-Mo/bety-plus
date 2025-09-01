@@ -71,6 +71,52 @@ class PricingService {
     };
   }
 
+  // Calculate trial price (4 days deposit for inside UAE workers)
+  static async calculateTrialPrice(worker, serviceType) {
+    const basePricing = await this.calculatePrice(worker, serviceType);
+
+    // Use worker's custom price if available, otherwise use pricing model
+    const baseAmount = worker.price || basePricing.totalFees || 1000; // Default fallback
+
+    // Trial is 4 days worth of payment (annual amount / 365 * 4)
+    const trialAmount = Math.round((baseAmount / 365) * 4);
+
+    return Object.assign({}, basePricing, {
+      totalAmount: trialAmount,
+      originalAmount: baseAmount,
+      trialDays: 4,
+      paymentType: 'deposit',
+      description: `4-day trial deposit for ${serviceType}`,
+    });
+  }
+
+  // Calculate full year price
+  static async calculateFullPrice(worker, serviceType) {
+    const pricing = await this.calculatePrice(worker, serviceType);
+
+    // Use worker's custom price if available
+    const totalAmount = worker.price || pricing.totalFees || 1000; // Default fallback
+
+    return Object.assign({}, pricing, {
+      totalAmount,
+      paymentType: 'full',
+      description: `Full year booking for ${serviceType}`,
+    });
+  }
+
+  // Calculate remaining amount after trial
+  static async calculateRemainingPrice(worker, serviceType, depositPaid) {
+    const fullPricing = await this.calculateFullPrice(worker, serviceType);
+    const remainingAmount = fullPricing.totalAmount - depositPaid;
+
+    return Object.assign({}, fullPricing, {
+      totalAmount: remainingAmount,
+      depositPaid,
+      paymentType: 'remaining',
+      description: `Remaining payment after trial for ${serviceType}`,
+    });
+  }
+
   // Helper method to get all active pricing
   static async getAllPricing() {
     try {

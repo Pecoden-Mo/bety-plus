@@ -42,6 +42,44 @@ const paymentSchema = new mongoose.Schema(
       cardBrand: String, // e.g., 'visa', 'mastercard'
       cardHolderName: String, // e.g., 'John Doe'
     },
+    // NEW: Payment type for UAE inside/outside logic
+    paymentType: {
+      type: String,
+      enum: ['deposit', 'full', 'remaining'],
+      required: true,
+      default: 'full',
+    },
+    // NEW: Trial information (for deposit payments)
+    trialInfo: {
+      isTrialPayment: {
+        type: Boolean,
+        default: false,
+      },
+      trialDays: {
+        type: Number,
+        default: 0,
+      },
+      originalFullAmount: {
+        type: Number, // Store full amount when paying deposit
+      },
+      trialStartDate: {
+        type: Date,
+      },
+      trialEndDate: {
+        type: Date,
+      },
+    },
+    // NEW: Related payments (link deposit with remaining payment)
+    relatedPayments: {
+      depositPaymentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Payment',
+      },
+      remainingPaymentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Payment',
+      },
+    },
     status: {
       type: String,
       enum: ['pending', 'succeeded', 'failed', 'refunded'],

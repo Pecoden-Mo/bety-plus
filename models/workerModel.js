@@ -2,12 +2,6 @@ import mongoose from 'mongoose';
 import AppError from '../utils/appError.js';
 
 const workerSchema = new mongoose.Schema({
-  // Price set by the company for this worker
-  price: {
-    type: Number,
-    required: [true, 'Price is required'],
-    min: 0,
-  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
@@ -33,6 +27,23 @@ const workerSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
+  },
+  price: {
+    type: Number,
+    required: [true, 'Price is required'],
+    min: 0,
+  },
+  deposit: {
+    type: Number,
+    required: [true, 'Deposit is required'],
+    min: 0,
+    // validate
+    validate: {
+      validator: function (v) {
+        return v <= this.price;
+      },
+      message: 'Deposit should not exceed the price',
+    },
   },
   maritalStatus: {
     type: String,
