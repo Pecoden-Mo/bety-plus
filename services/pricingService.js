@@ -101,6 +101,7 @@ class PricingService {
       totalAmount,
       paymentType: 'full',
       description: `Full year booking for ${serviceType}`,
+      pwd,
     });
   }
 

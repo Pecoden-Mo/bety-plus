@@ -16,7 +16,6 @@ const pricingSchema = new mongoose.Schema(
     },
     fees: {
       serviceFee: {
-        // when worker in UAE also if it outside uae
         type: Number,
         default: 0,
       },

@@ -46,14 +46,8 @@ const UserSchema = new mongoose.Schema(
       trim: true,
     },
     phoneNumber: {
-      primaryPhone: {
-        type: String,
-        trim: true,
-      },
-      secondaryPhone: {
-        type: String,
-        trim: true,
-      },
+      type: [String],
+      required: true,
     },
     city: {
       type: String,
