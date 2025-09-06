@@ -42,12 +42,10 @@ const UserSchema = new mongoose.Schema(
     },
     fullName: {
       type: String,
-      required: true,
       trim: true,
     },
     phoneNumber: {
       type: [String],
-      required: true,
     },
     city: {
       type: String,
