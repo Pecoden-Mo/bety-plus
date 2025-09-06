@@ -87,7 +87,7 @@ backend/
 
 #### **Payment Types**
 
-- `deposit` - Trial payment for UAE workers (4 days)
+- `deposit` - Trial payment for UAE workers (4 days) and this not optional
 - `full` - Complete annual payment
 - `remaining` - Balance payment after trial period
 

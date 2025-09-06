@@ -27,7 +27,7 @@ const seedPricingByRegion = async () => {
         currency: 'AED',
         fees: {
           serviceFee: 80,
-          deliveryFee: 0, // No delivery fee outside UAE
+          deliveryFee: 0,
         },
         isActive: true,
       },

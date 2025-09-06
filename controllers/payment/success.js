@@ -24,7 +24,6 @@ export default catchAsync(async (req, res, next) => {
     const payment = await PaymentModel.findOne({
       stripePaymentIntentId: session.id,
     })
-
       .populate('worker', 'fullName')
       .populate('company', 'companyName');
 
@@ -67,11 +66,11 @@ export default catchAsync(async (req, res, next) => {
           }
         }
       } catch (chargeError) {
-        // Silently handle charge processing errors
-        // Payment verification still succeeds even if we can't get charge details
+        console.error('Error fetching payment intent:', chargeError);
       }
 
       await payment.save();
+      console.log(payment);
 
       // Update worker availability
       const worker = await WorkerModel.findById(payment.worker._id);
@@ -79,6 +78,7 @@ export default catchAsync(async (req, res, next) => {
         worker.availability = 'reserved';
         await worker.save();
       }
+      console.log(worker);
     }
 
     res.status(200).json({

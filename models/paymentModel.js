@@ -23,7 +23,6 @@ const paymentSchema = new mongoose.Schema(
     },
     pricing: {
       basePrice: Number,
-      guaranteeFee: Number,
       serviceFee: Number,
       deliveryFee: Number,
       totalAmount: Number,
@@ -60,7 +59,7 @@ const paymentSchema = new mongoose.Schema(
         default: 0,
       },
       originalFullAmount: {
-        type: Number, // Store full amount when paying deposit
+        type: Number,
       },
       trialStartDate: {
         type: Date,
@@ -110,18 +109,30 @@ const paymentSchema = new mongoose.Schema(
 
 paymentSchema.index({ user: 1, status: 1 });
 paymentSchema.index({ createdAt: -1 });
-// after update payment status to succeeded set endDate for worker after 7 days if worker is from UAE
-// after update payment status to succeeded set endDate for worker after 1 year if worker is from Outside_UAE
+// after update payment status to succeeded set endDate for worker based on payment type and worker location
 paymentSchema.pre('save', async function (next) {
   if (this.isModified('status') && this.status === 'succeeded') {
     const now = new Date();
-    if (this.serviceMode === 'booking') {
-      // UAE worker - 7 days
-      this.endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    } else if (this.serviceMode === 'purchase') {
+
+    // Handle different payment types
+    if (this.paymentType === 'deposit') {
+      // Trial period - set trial end date
+      if (this.trialInfo.isTrialPayment) {
+        this.trialInfo.trialStartDate = now;
+        this.trialInfo.trialEndDate = new Date(
+          now.getTime() + this.trialInfo.trialDays * 24 * 60 * 60 * 1000
+        );
+      }
+    } else if (
+      this.paymentType === 'full' ||
+      this.paymentType === 'remaining'
+    ) {
+      // Full payment - set full year end date
       this.endDate = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
     }
+
     return next();
   }
+  next();
 });
 export default mongoose.model('Payment', paymentSchema);

@@ -35,7 +35,6 @@ const workerSchema = new mongoose.Schema({
   },
   deposit: {
     type: Number,
-    required: [true, 'Deposit is required'],
     min: 0,
     // validate
     validate: {
@@ -81,25 +80,6 @@ const workerSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    enum: [
-      'Dubai',
-      'Abu Dhabi',
-      'Sharjah',
-      'Ajman',
-      'Ras Al Khaimah',
-      'Fujairah',
-      'Umm Al Quwain',
-      'Riyadh',
-      'Jeddah',
-      'Dammam',
-      'Mecca',
-      'Medina',
-      'Kuwait City',
-      'Doha',
-      'Manama',
-      'Muscat',
-      'Other',
-    ],
     index: true,
   },
 
@@ -133,6 +113,7 @@ const workerSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
+  isDeleted: { type: Boolean, default: false },
 });
 workerSchema.index({ company: 1, status: 1 });
 workerSchema.index({ company: 1, availability: 1 });
@@ -164,6 +145,7 @@ workerSchema.pre('save', async function (next) {
       this.isInside = true;
     } else {
       this.isInside = false;
+      this.deposit = 0;
     }
     next();
   } catch (error) {

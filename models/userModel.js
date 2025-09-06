@@ -61,16 +61,15 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    houseNumber: {
+      type: String,
+      trim: true,
+    },
     nationality: {
       type: String,
       trim: true,
     },
     idPassportImage: {
-      type: String,
-      trim: true,
-    },
-
-    houseNumber: {
       type: String,
       trim: true,
     },

@@ -24,6 +24,13 @@ const pricingSchema = new mongoose.Schema(
         default: 0,
       },
     },
+    // Trial settings for UAE workers only
+    trialSettings: {
+      trialDays: {
+        type: Number,
+        default: 4,
+      },
+    },
     isActive: {
       type: Boolean,
       default: true,

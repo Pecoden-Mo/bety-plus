@@ -1,42 +1,46 @@
+/* eslint-disable prefer-object-spread */
 import PricingModel from '../models/pricingModel.js';
 import WorkerModel from '../models/workerModel.js';
 import AppError from '../utils/appError.js';
 
 class PricingService {
-  // Helper method to determine region based on worker's isInside property
-  static getRegion(isInside) {
-    return isInside ? 'UAE' : 'Outside_UAE';
-  }
-
   static async calculatePrice(worker) {
     try {
-      const region = this.getRegion(worker.isInside);
-
+      // Get global pricing settings
+      const region = worker.isInside ? 'UAE' : 'Outside_UAE';
       const pricing = await PricingModel.findOne({
-        region,
         isActive: true,
+        region,
       });
 
       if (!pricing) {
-        throw new AppError(`Pricing not found for region: ${region}`, 404);
+        throw new AppError('Pricing configuration not found', 404);
       }
 
-      // Calculate total fees based on region
-      let totalFees = pricing.fees.serviceFee || 0;
+      // Use worker's price as base price (required field in worker model)
+      const basePrice = worker.price;
 
-      // Add delivery fee only for UAE workers
-      if (worker.isInside) {
-        totalFees += pricing.fees.deliveryFee || 0;
+      if (!basePrice || basePrice <= 0) {
+        throw new AppError('Worker price not set', 400);
       }
+
+      // Calculate fees
+      const serviceFee = pricing.fees.serviceFee || 0;
+      const deliveryFee = pricing.fees.deliveryFee || 0;
+
+      const totalAmount = basePrice + serviceFee + deliveryFee;
 
       const pricingBreakdown = {
-        region,
         isInside: worker.isInside,
-        serviceFee: pricing.fees.serviceFee || 0,
-        deliveryFee: worker.isInside ? pricing.fees.deliveryFee || 0 : 0,
-        totalFees,
+        deposit: worker.deposit,
+        basePrice,
+        serviceFee,
+        deliveryFee,
+        totalAmount,
         currency: pricing.currency,
         workerLocation: worker.location,
+        canHaveTrial: worker.isInside,
+        trialDays: pricing.trialSettings.trialDays || 0,
       };
 
       return pricingBreakdown;
@@ -46,16 +50,42 @@ class PricingService {
   }
 
   static async getPricingQuote(workerId) {
-    const worker = await WorkerModel.findById(workerId).populate(
-      'company',
-      'companyName'
-    );
+    const worker = await WorkerModel.findById(workerId);
 
     if (!worker) {
       throw new AppError('Worker not found', 404);
     }
 
     const pricing = await this.calculatePrice(worker);
+
+    // For UAE workers, provide both trial and full payment options
+    const paymentOptions = {};
+
+    if (pricing.canHaveTrial) {
+      // Use worker's deposit as trial amount
+      const trialAmount = worker.deposit;
+
+      paymentOptions.trial = {
+        amount: trialAmount,
+        type: 'deposit',
+        description: `${pricing.trialDays}-day trial deposit`,
+        trialDays: pricing.trialDays,
+        originalFullAmount: pricing.totalAmount,
+      };
+
+      paymentOptions.full = {
+        amount: pricing.totalAmount,
+        type: 'full',
+        description: 'Full year payment',
+      };
+    } else {
+      // Outside UAE - only full payment
+      paymentOptions.full = {
+        amount: pricing.totalAmount,
+        type: 'full',
+        description: 'Full year payment (required for outside UAE workers)',
+      };
+    }
 
     return {
       worker: {
@@ -68,53 +98,50 @@ class PricingService {
         skills: worker.skills,
       },
       pricing,
+      paymentOptions,
     };
   }
 
-  // Calculate trial price (4 days deposit for inside UAE workers)
-  static async calculateTrialPrice(worker, serviceType) {
-    const basePricing = await this.calculatePrice(worker, serviceType);
+  // Calculate trial price (uses worker's deposit field)
+  static async calculateTrialPrice(worker) {
+    const basePricing = await this.calculatePrice(worker);
 
-    // Use worker's custom price if available, otherwise use pricing model
-    const baseAmount = worker.price || basePricing.totalFees || 1000; // Default fallback
+    if (!basePricing.canHaveTrial) {
+      throw new AppError('Trial not available for this worker', 400);
+    }
 
-    // Trial is 4 days worth of payment (annual amount / 365 * 4)
-    const trialAmount = Math.round((baseAmount / 365) * 4);
+    // Use worker's deposit field as trial amount
+    const trialAmount = worker.deposit;
 
     return Object.assign({}, basePricing, {
       totalAmount: trialAmount,
-      originalAmount: baseAmount,
-      trialDays: 4,
+      originalAmount: basePricing.totalAmount,
+      trialDays: basePricing.trialDays,
       paymentType: 'deposit',
-      description: `4-day trial deposit for ${serviceType}`,
+      description: `${basePricing.trialDays}-day trial deposit`,
     });
   }
 
   // Calculate full year price
-  static async calculateFullPrice(worker, serviceType) {
-    const pricing = await this.calculatePrice(worker, serviceType);
-
-    // Use worker's custom price if available
-    const totalAmount = worker.price || pricing.totalFees || 1000; // Default fallback
+  static async calculateFullPrice(worker) {
+    const pricing = await this.calculatePrice(worker);
 
     return Object.assign({}, pricing, {
-      totalAmount,
       paymentType: 'full',
-      description: `Full year booking for ${serviceType}`,
-      pwd,
+      description: 'Full year booking',
     });
   }
 
   // Calculate remaining amount after trial
-  static async calculateRemainingPrice(worker, serviceType, depositPaid) {
-    const fullPricing = await this.calculateFullPrice(worker, serviceType);
+  static async calculateRemainingPrice(worker, depositPaid) {
+    const fullPricing = await this.calculateFullPrice(worker);
     const remainingAmount = fullPricing.totalAmount - depositPaid;
 
     return Object.assign({}, fullPricing, {
       totalAmount: remainingAmount,
       depositPaid,
       paymentType: 'remaining',
-      description: `Remaining payment after trial for ${serviceType}`,
+      description: 'Remaining payment after trial',
     });
   }
 
@@ -129,9 +156,7 @@ class PricingService {
 
   // Helper method to validate worker pricing setup
   static async validateWorkerPricing(worker) {
-    const region = this.getRegion(worker.isInside);
     const pricing = await PricingModel.findOne({
-      region,
       isActive: true,
     });
 
@@ -139,16 +164,13 @@ class PricingService {
       worker: {
         location: worker.location,
         isInside: worker.isInside,
-        determinedRegion: region,
+        price: worker.price,
       },
       pricingExists: !!pricing,
       pricing: pricing
         ? {
-            basePrice: pricing.basePrice,
-            totalFees:
-              (pricing.fees.guaranteeFee || 0) +
-              (pricing.fees.serviceFee || 0) +
-              (pricing.fees.deliveryFee || 0),
+            serviceFee: pricing.fees.serviceFee || 0,
+            deliveryFee: pricing.fees.deliveryFee || 0,
             currency: pricing.currency,
           }
         : null,

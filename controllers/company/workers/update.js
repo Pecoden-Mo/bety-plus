@@ -2,6 +2,7 @@ import catchAsync from '../../../utils/catchAsync.js';
 import AppError from '../../../utils/appError.js';
 import workerModel from '../../../models/workerModel.js';
 import companyModel from '../../../models/companyModel.js';
+// import paymentModel from '../../../models/paymentModel.js';
 
 export default catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -10,7 +11,17 @@ export default catchAsync(async (req, res, next) => {
   if (!company) {
     return next(new AppError('Company not found for this user', 404));
   }
-
+  // check if worker is reserved or pending or deleted
+  // const existingWorker = await workerModel.findOne({
+  //   _id: id,
+  //   company: company._id,
+  // });
+  // if (!existingWorker) {
+  //   return next(new AppError('Worker not found', 404));
+  // }
+  // if (existingWorker.availability === 'reserved') {
+  //   return next(new AppError('Cannot update a reserved worker', 400));
+  // }
   const data = {
     fullName: req.body.fullName,
     age: req.body.age,

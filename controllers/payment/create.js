@@ -6,15 +6,16 @@ import UserModel from '../../models/userModel.js';
 import StripeService from '../../services/stripeService.js';
 import PricingService from '../../services/pricingService.js';
 
-/* TODO Sent notification to company
- * and admin on new payment request
- * also to user on payment success to chat in whatsapp admin
- */
 export default catchAsync(async (req, res, next) => {
-  const { workerId, serviceType = 'housemaid' } = req.body;
+  const { workerId, paymentType = 'full', depositPaymentId } = req.body;
   const userId = req.user.id;
 
-  // Get worker and calculate dynamic pricing
+  // Validate payment type
+  if (!['deposit', 'full', 'remaining'].includes(paymentType)) {
+    return next(new AppError('Invalid payment type', 400));
+  }
+
+  //  Get worker and validate availability
   const worker = await WorkerModel.findById(workerId).populate(
     'company',
     'companyName user'
@@ -33,11 +34,65 @@ export default catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError('User not found', 404));
   }
+  if (
+    !user.fullName ||
+    !user.email ||
+    !user.city ||
+    !user.phoneNumber.length ||
+    !user.phoneNumber[0] ||
+    !user.area ||
+    !user.street ||
+    !user.houseNumber ||
+    !user.nationality ||
+    !user.idPassportImage
+  ) {
+    return next(
+      new AppError('User profile incomplete, Please update your profile.', 400)
+    );
+  }
 
-  // Calculate dynamic pricing
-  const pricingData = await PricingService.calculatePrice(worker, serviceType);
+  // Validate payment type logic based on worker location
+  if (!worker.isInside && paymentType === 'deposit') {
+    return next(
+      new AppError('Trial payment not available for outside UAE workers', 400)
+    );
+  }
+
+  if (paymentType === 'remaining' && !depositPaymentId) {
+    return next(
+      new AppError('Deposit payment ID required for remaining payment', 400)
+    );
+  }
+
+  let pricingData;
+  let trialInfo = {};
+  const relatedPayments = {};
 
   try {
+    // Calculate pricing based on payment type
+    if (paymentType === 'deposit') {
+      pricingData = await PricingService.calculateTrialPrice(worker);
+      trialInfo = {
+        isTrialPayment: true,
+        trialDays: pricingData.trialDays,
+        originalFullAmount: pricingData.originalAmount,
+      };
+    } else if (paymentType === 'full') {
+      pricingData = await PricingService.calculateFullPrice(worker);
+    } else if (paymentType === 'remaining') {
+      // Get deposit payment to calculate remaining amount
+      const depositPayment = await PaymentModel.findById(depositPaymentId);
+      if (!depositPayment || depositPayment.paymentType !== 'deposit') {
+        return next(new AppError('Invalid deposit payment', 400));
+      }
+
+      pricingData = await PricingService.calculateRemainingPrice(
+        worker,
+        depositPayment.pricing.totalAmount
+      );
+      relatedPayments.depositPaymentId = depositPaymentId;
+    }
+
     // Create or get Stripe customer
     const customer = await StripeService.createOrGetCustomer(user);
 
@@ -52,28 +107,43 @@ export default catchAsync(async (req, res, next) => {
       amount: pricingData.totalAmount,
       currency: pricingData.currency,
       customer,
-      description: `خدمة ${serviceType} - ${worker.fullName}`,
+      description: `${pricingData.description} - ${worker.fullName}`,
       workerId: workerId,
       metadata: {
         userId: userId.toString(),
         workerId: workerId,
-        serviceType: serviceType,
+        paymentType: paymentType,
         companyId: worker.company._id.toString(),
       },
     });
-    console.log(session);
 
     // Create payment record with pending status
     const payment = await PaymentModel.create({
       user: userId,
       worker: workerId,
       company: worker.company._id,
-      pricing: pricingData,
+      pricing: {
+        basePrice: pricingData.basePrice,
+        serviceFee: pricingData.serviceFee,
+        deliveryFee: pricingData.deliveryFee,
+        totalAmount: pricingData.totalAmount,
+        currency: pricingData.currency,
+      },
+      paymentType,
+      trialInfo,
+      relatedPayments,
       stripePaymentIntentId: session.id,
       stripeCustomerId: customer.id,
-      serviceType: serviceType,
+      serviceMode: paymentType === 'deposit' ? 'booking' : 'purchase',
       status: 'pending',
     });
+
+    // If this is a remaining payment, link it to the deposit payment
+    if (paymentType === 'remaining' && depositPaymentId) {
+      await PaymentModel.findByIdAndUpdate(depositPaymentId, {
+        'relatedPayments.remainingPaymentId': payment._id,
+      });
+    }
 
     res.status(200).json({
       status: 'success',
@@ -81,11 +151,13 @@ export default catchAsync(async (req, res, next) => {
         paymentId: payment._id,
         checkoutUrl: session.url,
         sessionId: session.id,
+        paymentType,
         pricing: pricingData,
         worker: {
           id: worker._id,
           name: worker.fullName,
           company: worker.company.companyName,
+          isInside: worker.isInside,
         },
       },
     });
