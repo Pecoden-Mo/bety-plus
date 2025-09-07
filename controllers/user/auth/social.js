@@ -15,9 +15,7 @@ const authCallback = catchAsync(async (req, res, next) => {
   sendToken(user, res);
   res.status(201).json({
     status: 'success',
-    data: {
-      user,
-    },
+    message: 'Authentication successful',
   });
 });
 

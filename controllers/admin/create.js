@@ -5,7 +5,6 @@ import companyModel from '../../models/companyModel.js';
 import sendToken from '../../utils/sendToken.js';
 
 const register = catchAsync(async (req, res, next) => {
-
   const { email, password, phoneNumber, jobTitle, fullName } = req.body;
 
   const existingUser = await userModel.findOne({ email });
@@ -28,9 +27,7 @@ const register = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     status: 'success',
-    data: {
-      user: newUser,
-    },
+    message: 'Admin registered successfully',
   });
 });
 

@@ -69,10 +69,11 @@ const register = catchAsync(async (req, res, next) => {
 
     res.status(201).json({
       status: 'success',
-      data: {
-        user: userResponse,
-        company: newCompany,
-      },
+      message: 'Company registration successful',
+      // data: {
+      //   user: userResponse,
+      //   company: newCompany,
+      // },
     });
   } catch (error) {
     await session.abortTransaction();

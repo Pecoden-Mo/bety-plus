@@ -22,9 +22,7 @@ const register = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     status: 'success',
-    data: {
-      user: newUser,
-    },
+    message: 'Registration successful',
   });
 });
 
