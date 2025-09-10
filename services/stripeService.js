@@ -79,7 +79,9 @@ class StripeService {
     try {
       const paymentIntent = await stripe.paymentIntents.retrieve(
         paymentIntentId,
-        { expand: ['charges.data'] }
+        {
+          expand: ['charges.data.payment_method_details', 'payment_method'],
+        }
       );
       return paymentIntent;
     } catch (error) {

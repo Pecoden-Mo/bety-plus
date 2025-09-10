@@ -7,7 +7,7 @@ import StripeService from '../../services/stripeService.js';
 import PricingService from '../../services/pricingService.js';
 
 export default catchAsync(async (req, res, next) => {
-  const { workerId, paymentType = 'full', depositPaymentId } = req.body;
+  const { workerId, paymentType, depositPaymentId } = req.body;
   const userId = req.user.id;
 
   // Validate payment type
@@ -18,15 +18,11 @@ export default catchAsync(async (req, res, next) => {
   //  Get worker and validate availability
   const worker = await WorkerModel.findById(workerId).populate(
     'company',
-    'companyName user'
+    'user'
   );
 
   if (!worker) {
     return next(new AppError('Worker not found', 404));
-  }
-
-  if (worker.availability !== 'currently available') {
-    return next(new AppError('Worker is not available for booking', 400));
   }
 
   // Get user details
@@ -34,22 +30,22 @@ export default catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError('User not found', 404));
   }
-  if (
-    !user.fullName ||
-    !user.email ||
-    !user.city ||
-    !user.phoneNumber.length ||
-    !user.phoneNumber[0] ||
-    !user.area ||
-    !user.street ||
-    !user.houseNumber ||
-    !user.nationality ||
-    !user.idPassportImage
-  ) {
-    return next(
-      new AppError('User profile incomplete, Please update your profile.', 400)
-    );
-  }
+  // if (
+  //   !user.fullName ||
+  //   !user.email ||
+  //   !user.city ||
+  //   !user.phoneNumber.length ||
+  //   !user.phoneNumber[0] ||
+  //   !user.area ||
+  //   !user.street ||
+  //   !user.houseNumber ||
+  //   !user.nationality ||
+  //   !user.idPassportImage
+  // ) {
+  //   return next(
+  //     new AppError('User profile incomplete, Please update your profile.', 400)
+  //   );
+  // }
 
   // Validate payment type logic based on worker location
   if (!worker.isInside && paymentType === 'deposit') {
@@ -58,10 +54,25 @@ export default catchAsync(async (req, res, next) => {
     );
   }
 
+  // can delete in future
+  if (worker.isInside && paymentType === 'full') {
+    return next(
+      new AppError(
+        'Full payment not available for in side UAE workers, please choose trial payment first',
+        400
+      )
+    );
+  }
+
   if (paymentType === 'remaining' && !depositPaymentId) {
     return next(
       new AppError('Deposit payment ID required for remaining payment', 400)
     );
+  }
+  if (paymentType === 'deposit' || paymentType === 'full') {
+    if (worker.availability !== 'currently available') {
+      return next(new AppError('Worker is not available for booking', 400));
+    }
   }
 
   let pricingData;

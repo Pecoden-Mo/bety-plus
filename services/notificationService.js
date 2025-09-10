@@ -103,6 +103,39 @@ class NotificationService {
     return await this.createBulkNotifications(admins, messageData);
   }
 
+  // Payment success notification (to user)
+  static async notifyPaymentSuccess(payment, user) {
+    const messageData = {
+      recipient: user._id,
+      message: `Payment of ${payment.amount} ${payment.currency} completed successfully for worker "${payment.worker.fullName}"`,
+      event: 'payment_success',
+      priority: 'medium',
+    };
+
+    return await this.createNotification(messageData);
+  }
+
+  // Worker booking notification (to admins)
+  static async notifyWorkerBooking(payment, worker, user) {
+    const admins = await this.getAllAdmins();
+    if (admins.length === 0) return;
+
+    const paymentTypeText = {
+      deposit: 'deposit payment',
+      full: 'full payment',
+      remaining: 'remaining payment',
+    };
+
+    const messageData = {
+      message: `Worker "${worker.fullName}" from "${worker.company.companyName}" has been booked by "${user.fullName}" (${paymentTypeText[payment.paymentType] || payment.paymentType}) - Amount: ${payment.amount} ${payment.currency}`,
+      event: 'worker_booking',
+      company: worker.company._id,
+      priority: 'high',
+    };
+
+    return await this.createBulkNotifications(admins, messageData);
+  }
+
   // Get notifications for a user with pagination
   static async getUserNotifications(
     userId,
@@ -149,7 +182,7 @@ class NotificationService {
   // Mark all notifications as read for a user
   static async markAllAsRead(userId) {
     const result = await Notification.updateMany(
-      { recipient: userId, read: false },
+      { recipient: userId, isRead: false },
       { isRead: true }
     );
     return result;

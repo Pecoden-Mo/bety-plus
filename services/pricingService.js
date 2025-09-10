@@ -32,7 +32,6 @@ class PricingService {
 
       const pricingBreakdown = {
         isInside: worker.isInside,
-        deposit: worker.deposit,
         basePrice,
         serviceFee,
         deliveryFee,
@@ -62,8 +61,9 @@ class PricingService {
     const paymentOptions = {};
 
     if (pricing.canHaveTrial) {
-      // Use worker's deposit as trial amount
-      const trialAmount = worker.deposit;
+      // Use worker's deposit + fees as trial amount (consistent with calculateTrialPrice)
+      const trialAmount =
+        worker.deposit + pricing.serviceFee + pricing.deliveryFee;
 
       paymentOptions.trial = {
         amount: trialAmount,
@@ -110,12 +110,15 @@ class PricingService {
       throw new AppError('Trial not available for this worker', 400);
     }
 
-    // Use worker's deposit field as trial amount
-    const trialAmount = worker.deposit;
+    // Use worker's deposit field + fees as trial amount
+    const trialAmount =
+      worker.deposit + basePricing.serviceFee + basePricing.deliveryFee;
 
     return Object.assign({}, basePricing, {
+      basePrice: worker.deposit,
       totalAmount: trialAmount,
-      originalAmount: basePricing.totalAmount,
+      originalAmount: basePricing.totalAmount, // This should be worker.price + fees
+      remainingAmount: basePricing.totalAmount - trialAmount,
       trialDays: basePricing.trialDays,
       paymentType: 'deposit',
       description: `${basePricing.trialDays}-day trial deposit`,

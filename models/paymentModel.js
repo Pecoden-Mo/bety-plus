@@ -113,7 +113,7 @@ paymentSchema.index({ createdAt: -1 });
 paymentSchema.pre('save', async function (next) {
   if (this.isModified('status') && this.status === 'succeeded') {
     const now = new Date();
-
+    // TODO When should the trial period start? Upon payment success or worker assignment?
     // Handle different payment types
     if (this.paymentType === 'deposit') {
       // Trial period - set trial end date
