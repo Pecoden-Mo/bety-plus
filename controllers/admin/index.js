@@ -5,6 +5,12 @@ import {
   getPendingCompanies,
   getAllCompanies,
 } from './company.js';
+import {
+  getAllPaymentsWithDeployment,
+  updateWorkerDeploymentStatus,
+  getPaymentDeploymentDetails,
+  getDeploymentStats,
+} from './payment.js';
 
 export default {
   create,
@@ -12,4 +18,8 @@ export default {
   rejectCompany,
   getPendingCompanies,
   getAllCompanies,
+  getAllPaymentsWithDeployment,
+  updateWorkerDeploymentStatus,
+  getPaymentDeploymentDetails,
+  getDeploymentStats,
 };

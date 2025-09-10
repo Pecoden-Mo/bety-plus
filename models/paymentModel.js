@@ -41,14 +41,12 @@ const paymentSchema = new mongoose.Schema(
       cardBrand: String, // e.g., 'visa', 'mastercard'
       cardHolderName: String, // e.g., 'John Doe'
     },
-    // NEW: Payment type for UAE inside/outside logic
     paymentType: {
       type: String,
       enum: ['deposit', 'full', 'remaining'],
       required: true,
       default: 'full',
     },
-    // NEW: Trial information (for deposit payments)
     trialInfo: {
       isTrialPayment: {
         type: Boolean,
@@ -68,7 +66,6 @@ const paymentSchema = new mongoose.Schema(
         type: Date,
       },
     },
-    // NEW: Related payments (link deposit with remaining payment)
     relatedPayments: {
       depositPaymentId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -87,8 +84,21 @@ const paymentSchema = new mongoose.Schema(
     },
     serviceMode: {
       type: String,
-      enum: ['booking', 'purchase'],
+      enum: ['booking', 'purchase', 'refund'],
       required: [true, 'Service mode is required'],
+    },
+    workerDeployment: {
+      status: {
+        type: String,
+        enum: ['pending_dispatch', 'dispatched', 'arrived'],
+        default: 'pending_dispatch',
+      },
+      dispatchDate: {
+        type: Date,
+      },
+      actualArrivalDate: {
+        type: Date,
+      },
     },
     receiptUrl: String,
     refund: {
@@ -111,12 +121,15 @@ paymentSchema.index({ user: 1, status: 1 });
 paymentSchema.index({ createdAt: -1 });
 // after update payment status to succeeded set endDate for worker based on payment type and worker location
 paymentSchema.pre('save', async function (next) {
-  if (this.isModified('status') && this.status === 'succeeded') {
+  // Only set end dates when worker arrives, not when payment succeeds
+  if (
+    this.isModified('workerDeployment.status') &&
+    this.workerDeployment.status === 'arrived'
+  ) {
     const now = new Date();
-    // TODO When should the trial period start? Upon payment success or worker assignment?
-    // Handle different payment types
+    // Handle different payment types - start counting from arrival time
     if (this.paymentType === 'deposit') {
-      // Trial period - set trial end date
+      // Trial period - set trial end date from arrival
       if (this.trialInfo.isTrialPayment) {
         this.trialInfo.trialStartDate = now;
         this.trialInfo.trialEndDate = new Date(
@@ -127,7 +140,7 @@ paymentSchema.pre('save', async function (next) {
       this.paymentType === 'full' ||
       this.paymentType === 'remaining'
     ) {
-      // Full payment - set full year end date
+      // Full payment - set full year end date from arrival
       this.endDate = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
     }
 

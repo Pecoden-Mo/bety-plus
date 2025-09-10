@@ -14,15 +14,12 @@ export default catchAsync(async (req, res, next) => {
   }
 
   try {
-    // Get session details from Stripe
     const session = await StripeService.getCheckoutSession(sessionId);
-    // console.log(session);
 
     if (!session) {
       return next(new AppError('Invalid session', 400));
     }
 
-    // Find payment record
     const payment = await PaymentModel.findOne({
       stripePaymentIntentId: session.id,
     })
@@ -33,22 +30,21 @@ export default catchAsync(async (req, res, next) => {
     if (!payment) {
       return next(new AppError('Payment record not found', 404));
     }
-
-    // Update payment status based on session
+    const worker = await WorkerModel.findById(payment.worker._id).populate(
+      'company',
+      'companyName user'
+    );
     if (session.payment_status === 'paid' && payment.status === 'pending') {
       payment.status = 'succeeded';
 
-      // Get payment intent for receipt URL and payment method details
       try {
         const paymentIntent = await StripeService.getPayment(
           session.payment_intent
         );
 
         if (paymentIntent) {
-          // Try to get payment method from different sources
           let paymentMethodDetails = null;
 
-          // Method 1: From charges
           if (
             paymentIntent.charges &&
             paymentIntent.charges.data &&
@@ -66,13 +62,11 @@ export default catchAsync(async (req, res, next) => {
               };
             }
 
-            // Set receipt URL if available
             if (charge.receipt_url) {
               payment.receiptUrl = charge.receipt_url;
             }
           }
 
-          // Method 2: From payment method object
           if (!paymentMethodDetails && paymentIntent.payment_method) {
             if (paymentIntent.payment_method.card) {
               paymentMethodDetails = {
@@ -82,33 +76,25 @@ export default catchAsync(async (req, res, next) => {
             }
           }
 
-          // Set payment method if found
           if (paymentMethodDetails) {
             payment.paymentMethod = paymentMethodDetails;
           }
         }
       } catch (chargeError) {
-        // Silently continue if payment method details can't be retrieved
+        console.log('Failed to retrieve payment intent details:', chargeError);
       }
 
       await payment.save();
 
-      // Update worker availability
-      const worker = await WorkerModel.findById(payment.worker._id).populate(
-        'company',
-        'companyName user'
-      );
       if (worker) {
         worker.availability = 'reserved';
         await worker.save();
       }
 
-      // Get user details for notifications
       const user = await UserModel.findById(payment.user);
 
       // Send notifications
       try {
-        // Notify user about successful payment
         await NotificationService.notifyPaymentSuccess(payment, user);
 
         // Notify admins about worker booking
@@ -116,7 +102,6 @@ export default catchAsync(async (req, res, next) => {
           await NotificationService.notifyWorkerBooking(payment, worker, user);
         }
       } catch (notificationError) {
-        // Log notification error but don't fail the payment process
         // eslint-disable-next-line no-console
         console.error(
           'Failed to send payment notifications:',
@@ -134,6 +119,7 @@ export default catchAsync(async (req, res, next) => {
       trialDays: payment.trialInfo ? payment.trialInfo.trialDays : null,
       trialStarts: payment.trialInfo ? payment.trialInfo.trialStartDate : null,
       trialEnds: payment.trialInfo ? payment.trialInfo.trialEndDate : null,
+      arriveIn: worker.arrivalTime,
       receiptUrl: payment.receiptUrl,
       worker: {
         name: payment.worker.fullName,
@@ -141,7 +127,6 @@ export default catchAsync(async (req, res, next) => {
       },
     };
 
-    // Only include payment method if available
     if (payment.paymentMethod) {
       responseData.paymentMethod = payment.paymentMethod;
     }

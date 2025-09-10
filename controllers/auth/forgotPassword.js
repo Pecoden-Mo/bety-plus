@@ -26,8 +26,7 @@ const forgotPassword = catchAsync(async (req, res, next) => {
     if (!user) {
       return res.status(200).json({
         status: 'success',
-        message:
-          'If an account with that email exists, a reset link has been sent.',
+        message: 'Check your box, a reset link has been sent.',
       });
     }
     if (user.lastResetRequest && Date.now() - user.lastResetRequest < 60000) {
@@ -42,16 +41,17 @@ const forgotPassword = catchAsync(async (req, res, next) => {
     user.lastResetRequest = Date.now();
     try {
       await user.save({ validateBeforeSave: false });
-      // Send reset email
-      const emailResult = await emailService.sendResetEmail(
-        email,
-        resetToken,
-        req.get('User-Agent'),
-        req.ip
-      );
-      if (!emailResult.success) {
-        console.log('Failed to send reset email:', emailResult.error);
-      }
+
+      // Send reset email asynchronously - don't wait for it
+      setImmediate(() => {
+        emailService
+          .sendResetEmail(email, resetToken, req.get('User-Agent'), req.ip)
+          .catch((error) => {
+            // eslint-disable-next-line no-console
+            console.error('Email sending failed:', error);
+          });
+      });
+
       res.status(200).json({
         status: 'success',
         message:
@@ -62,9 +62,11 @@ const forgotPassword = catchAsync(async (req, res, next) => {
         status: 'error',
         message: 'Failed to process your request. Please try again later.',
       });
+      // eslint-disable-next-line no-console
       console.error('Password reset request error:', error);
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error in forgotPassword controller: ~File: ', error);
     return next(
       new AppError('An error occurred while processing your request.', 500)
