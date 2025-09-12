@@ -1,6 +1,8 @@
+import mongoose from 'mongoose';
 import catchAsync from '../../utils/catchAsync.js';
 import AppError from '../../utils/appError.js';
 import companyModel from '../../models/companyModel.js';
+import workerModel from '../../models/workerModel.js';
 import NotificationService from '../../services/notificationService.js';
 
 // Approve company
@@ -205,4 +207,95 @@ export const getAllCompanies = catchAsync(async (req, res, next) => {
   });
 });
 
-export const getCompany = catchAsync(async (req, res, next) => {});
+export const getCompany = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  console.log('get company id:', id);
+
+  // Find the company with all related data
+  const company = await companyModel
+    .findById(id)
+    .populate('user', 'email fullName phoneNumber address')
+    .populate('approvedBy', 'email fullName');
+
+  if (!company) {
+    return next(new AppError('Company not found', 404));
+  }
+
+  // Get company workers with pagination
+  const {
+    page = 1,
+    limit = 10,
+    status: workerStatus,
+    availability,
+  } = req.query;
+  const skip = (page - 1) * limit;
+
+  // Build worker filter
+  const workerFilter = { company: id, isDeleted: false };
+  if (workerStatus) {
+    workerFilter.status = workerStatus;
+  }
+  if (availability) {
+    workerFilter.availability = availability;
+  }
+
+  // Get workers with pagination
+  const workers = await workerModel
+    .find(workerFilter)
+    .select('-__v')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(parseInt(limit));
+
+  // Get total worker count
+  const totalWorkers = await workerModel.countDocuments(workerFilter);
+
+  // Get worker statistics
+  const workerStats = await workerModel.aggregate([
+    { $match: { company: new mongoose.Types.ObjectId(id), isDeleted: false } },
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const availabilityStats = await workerModel.aggregate([
+    { $match: { company: new mongoose.Types.ObjectId(id), isDeleted: false } },
+    {
+      $group: {
+        _id: '$availability',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  // Format statistics
+  const stats = {
+    total: totalWorkers,
+    byStatus: workerStats.reduce((acc, item) => {
+      acc[item._id] = item.count;
+      return acc;
+    }, {}),
+    byAvailability: availabilityStats.reduce((acc, item) => {
+      acc[item._id] = item.count;
+      return acc;
+    }, {}),
+  };
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      company,
+      workers,
+      stats,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalWorkers,
+        pages: Math.ceil(totalWorkers / limit),
+      },
+    },
+  });
+});

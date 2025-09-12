@@ -20,6 +20,7 @@ const CompanySchema = new mongoose.Schema(
     commercialLicensePhoto: {
       type: String,
       trim: true,
+      required: [true, 'Commercial license photo is required'],
     },
     licensingAuthority: {
       type: String,
@@ -29,10 +30,6 @@ const CompanySchema = new mongoose.Schema(
     headOfficeAddress: {
       type: String,
       required: [true, 'Head office address is required'],
-      trim: true,
-    },
-    image: {
-      type: String,
       trim: true,
     },
     status: {

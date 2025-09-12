@@ -28,16 +28,29 @@ export const checkProfileCompletion = catchAsync(async (req, res, next) => {
 
   const requiredFields = [
     'fullName',
-    'primaryPhone',
+    'phoneNumber',
     'city',
     'area',
     'nationality',
+    'street',
+    'houseNumber',
+    'passportImage',
   ];
 
   const missingFields = [];
 
   requiredFields.forEach((field) => {
-    if (!user[field]) {
+    if (field === 'phoneNumber') {
+      // Check if phoneNumber array exists and has at least one valid phone number
+      if (
+        !user.phoneNumber ||
+        !Array.isArray(user.phoneNumber) ||
+        user.phoneNumber.length === 0 ||
+        !user.phoneNumber.some((phone) => phone && phone.trim() !== '')
+      ) {
+        missingFields.push(field);
+      }
+    } else if (!user[field]) {
       missingFields.push(field);
     }
   });

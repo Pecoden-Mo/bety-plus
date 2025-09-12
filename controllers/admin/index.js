@@ -4,6 +4,7 @@ import {
   rejectCompany,
   getPendingCompanies,
   getAllCompanies,
+  getCompany,
 } from './company.js';
 import {
   getAllPaymentsWithDeployment,
@@ -22,4 +23,5 @@ export default {
   updateWorkerDeploymentStatus,
   getPaymentDeploymentDetails,
   getDeploymentStats,
+  getCompany,
 };

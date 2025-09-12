@@ -33,12 +33,10 @@ const registerValidator = [
     .withMessage('Password is required')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long'),
-  check('confirmPassword').custom((value, { req }) => {
-    if (value !== req.body.password) {
-      throw new Error('Passwords do not match');
-    }
-    return true;
-  }),
+  check('commercialLicensePhoto')
+    .notEmpty()
+    .withMessage('Commercial license photo is required'),
+
   validator,
 ];
 

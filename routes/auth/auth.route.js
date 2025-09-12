@@ -15,6 +15,7 @@ router.post(
   auth.changePassword
 );
 router.post('/logout', auth.logout);
+router.get('/me', auth.getMe);
 
 export default router;
 // we can make this route for all auth as /auth/user/register  and make unified auth route here

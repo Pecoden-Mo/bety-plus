@@ -28,6 +28,12 @@ const UserSchema = new mongoose.Schema(
     image: {
       type: String,
       trim: true,
+      default: function () {
+        if (this.role === 'company') {
+          return 'https://res.cloudinary.com/dmm1ewnt6/image/upload/v1757679007/companies/licenses/jt5rlumyfi8lj5xh9xwg.png';
+        }
+        return null; // No default for other roles
+      },
     },
     provider: {
       name: {
@@ -40,6 +46,7 @@ const UserSchema = new mongoose.Schema(
         sparse: true,
       },
     },
+    // Additional profile fields must when booking
     fullName: {
       type: String,
       trim: true,
@@ -67,7 +74,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    idPassportImage: {
+    passportImage: {
       type: String,
       trim: true,
     },
@@ -151,5 +158,24 @@ UserSchema.methods.passwordChangedAfter = function (JWTTimestamp) {
 
   return JWTTimestamp < changedTimestamp;
 };
+
+// Pre-save middleware to set default image based on role
+UserSchema.pre('save', function (next) {
+  // Only set default image if no image is provided and user is new
+  if (this.isNew && !this.image) {
+    if (this.role === 'company') {
+      this.image =
+        'https://res.cloudinary.com/dmm1ewnt6/image/upload/v1757679007/companies/licenses/jt5rlumyfi8lj5xh9xwg.png';
+    } else if (this.role === 'admin' || this.role === 'customer') {
+      this.image =
+        'https://res.cloudinary.com/dmm1ewnt6/image/upload/v1757690261/1077063_sjwpkg.png';
+    }
+  }
+  next();
+});
+
+// Ensure virtual fields are serialized
+UserSchema.set('toJSON', { virtuals: true });
+UserSchema.set('toObject', { virtuals: true });
 
 export default mongoose.model('User', UserSchema);

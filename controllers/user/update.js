@@ -8,17 +8,27 @@ import userModel from '../../models/userModel.js';
 const update = catchAsync(async (req, res, next) => {
   const date = {};
   if (req.body.fullName) date.fullName = req.body.fullName;
-  if (req.body.primaryPhone) date.primaryPhone = req.body.primaryPhone;
-  if (req.body.secondaryPhone) date.secondaryPhone = req.body.secondaryPhone;
+
+  // Handle phone numbers as array
+  if (req.body.phoneNumber) {
+    // If phoneNumber is provided as array, use it directly
+    if (Array.isArray(req.body.phoneNumber)) {
+      date.phoneNumber = req.body.phoneNumber.filter(
+        (phone) => phone && phone.trim() !== ''
+      );
+    } else if (typeof req.body.phoneNumber === 'string') {
+      // If phoneNumber is provided as string, convert to array
+      date.phoneNumber = [req.body.phoneNumber.trim()];
+    }
+  }
+
   if (req.body.city) date.city = req.body.city;
   if (req.body.area) date.area = req.body.area;
   if (req.body.street) date.street = req.body.street;
   if (req.body.image) date.image = req.body.image;
   if (req.body.nationality) date.nationality = req.body.nationality;
-  if (req.body.emirate) date.emirate = req.body.emirate;
   if (req.body.houseNumber) date.houseNumber = req.body.houseNumber;
-  if (req.body.apartmentNumber) date.apartmentNumber = req.body.apartmentNumber;
-  if (req.body.idPassportImage) date.idPassportImage = req.body.idPassportImage;
+  if (req.body.passportImage) date.passportImage = req.body.passportImage;
 
   const user = await userModel.findOneAndUpdate(
     { _id: req.user.id, role: 'customer' },

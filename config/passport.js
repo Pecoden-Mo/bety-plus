@@ -12,7 +12,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:
-        'http://localhost:3020/api/v1/users/social-auth/google/callback', // Handle user profile and authentication logic herehttp://localhost:3020/api/v1/users/auth/social/google/callback
+        'http://localhost:3020/api/v1/users/auth/social/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {

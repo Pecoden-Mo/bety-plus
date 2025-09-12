@@ -35,6 +35,7 @@ const register = catchAsync(async (req, res, next) => {
         {
           email,
           password,
+          fullName: companyName,
           role: 'company',
         },
       ],
@@ -70,10 +71,6 @@ const register = catchAsync(async (req, res, next) => {
     res.status(201).json({
       status: 'success',
       message: 'Company registration successful',
-      // data: {
-      //   user: userResponse,
-      //   company: newCompany,
-      // },
     });
   } catch (error) {
     await session.abortTransaction();

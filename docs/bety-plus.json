@@ -1,0 +1,1633 @@
+{
+  "info": {
+    "_postman_id": "a87c82ea-98c2-4e5b-8650-bec25b1ca1dd",
+    "name": "Bety-Plus API - Complete Collection",
+    "description": "Complete API documentation for Bety-Plus backend with all routes, required fields, and validation info.\n\n## 📋 **Field Requirements Legend:**\n- ✅ **Required** - Must be provided\n- ⚠️ **Required for Booking** - Needed when user wants to book services\n- 🔧 **Optional** - Can be omitted\n- 📎 **File Upload** - Multipart form data required\n- 🔢 **Array** - Accepts multiple values\n\n## 🍪 **Authentication:**\n- Uses HTTP-only cookies for authentication\n- Login sets 'token' cookie automatically\n- Postman automatically handles cookies between requests\n- No manual Authorization headers needed\n- Public routes are marked as such\n- Admin routes require admin role\n\n## 🌍 **Environments:**\n- DEV_URL: http://localhost:3020\n- API Base: {{DEV_URL}}/api/v1/v1\n\n## 📝 **Cookie Setup in Postman:**\n1. After login, cookie is automatically set\n2. Enable 'Cookie Jar' in Postman settings\n3. Cookies persist across requests in same session",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "description": "Common authentication endpoints for all user types",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/auth/login",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login user and get JWT token\n\n**Required Fields:**\n- ✅ email (string)\n- ✅ password (string)"
+          }
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/auth/me",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "auth", "me"]
+            },
+            "description": "Get current authenticated user info\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/auth/forgot-password",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "auth", "forgot-password"]
+            },
+            "description": "Send password reset email\n\n**Required Fields:**\n- ✅ email (string, valid email)"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token\",\n  \"password\": \"newpassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/auth/reset-password",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "auth", "reset-password"]
+            },
+            "description": "Reset password with token\n\n**Required Fields:**\n- ✅ token (string, from email)\n- ✅ password (string, min 8 characters)"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"oldpassword\",\n  \"newPassword\": \"newpassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/auth/change-password",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "auth", "change-password"]
+            },
+            "description": "Change user password\n\n🍪 **Authentication Required** - Uses cookies\n\n**Required Fields:**\n- ✅ currentPassword (string)\n- ✅ newPassword (string, min 8 characters)"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/auth/logout",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Logout user and invalidate token\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/auth/logout",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Logout current user and clear authentication cookie\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Users",
+      "description": "User registration, authentication, and profile management",
+      "item": [
+        {
+          "name": "Auth",
+          "description": "User-specific authentication endpoints",
+          "item": [
+            {
+              "name": "Register User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"John Doe\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/users/auth/register",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "users", "auth", "register"]
+                },
+                "description": "Register new user account\n\n**Required Fields:**\n- ✅ email (string, valid email format)\n- ✅ password (string, min 8 characters)\n- ✅ fullName (string, 2-100 characters)\n\n🌍 **Public Route** - Role automatically set to 'customer'"
+              }
+            },
+            {
+              "name": "Social Auth",
+              "description": "Social authentication endpoints",
+              "item": [
+                {
+                  "name": "Google OAuth",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{DEV_URL}}/api/v1/users/auth/social/google",
+                      "host": ["{{DEV_URL}}"],
+                      "path": ["api", "v1", "users", "auth", "social", "google"]
+                    },
+                    "description": "Initiate Google OAuth authentication\n\n🌍 **Public Route** - Redirects to Google OAuth"
+                  }
+                },
+                {
+                  "name": "Google OAuth Callback",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{DEV_URL}}/api/v1/users/auth/social/google/callback",
+                      "host": ["{{DEV_URL}}"],
+                      "path": [
+                        "api",
+                        "v1",
+                        "users",
+                        "auth",
+                        "social",
+                        "google",
+                        "callback"
+                      ]
+                    },
+                    "description": "Handle Google OAuth callback\n\n🌍 **Public Route** - Called by Google after authentication"
+                  }
+                },
+                {
+                  "name": "Microsoft OAuth",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{DEV_URL}}/api/v1/users/auth/social/microsoft",
+                      "host": ["{{DEV_URL}}"],
+                      "path": [
+                        "api",
+                        "v1",
+                        "users",
+                        "auth",
+                        "social",
+                        "microsoft"
+                      ]
+                    },
+                    "description": "Initiate Microsoft OAuth authentication\n\n🌍 **Public Route** - Redirects to Microsoft OAuth"
+                  }
+                },
+                {
+                  "name": "Microsoft OAuth Callback",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{DEV_URL}}/api/v1/users/auth/social/microsoft/callback",
+                      "host": ["{{DEV_URL}}"],
+                      "path": [
+                        "api",
+                        "v1",
+                        "users",
+                        "auth",
+                        "social",
+                        "microsoft",
+                        "callback"
+                      ]
+                    },
+                    "description": "Handle Microsoft OAuth callback\n\n🌍 **Public Route** - Called by Microsoft after authentication"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Profile Management",
+          "description": "User profile operations",
+          "item": [
+            {
+              "name": "Get Profile",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/users/profile",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "users", "profile"]
+                },
+                "description": "Get user profile information\n\n🍪 **Authentication Required** - Customer role"
+              }
+            },
+            {
+              "name": "Check Profile Completion",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/users/profile/completion",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "users", "profile", "completion"]
+                },
+                "description": "Check if user profile is complete for booking\n\n🍪 **Authentication Required** - Customer role"
+              }
+            },
+            {
+              "name": "Update Profile",
+              "request": {
+                "method": "PATCH",
+                "header": [{}],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "fullName",
+                      "value": "John Doe",
+                      "description": "⚠️ Required for booking (2-100 chars)",
+                      "type": "text"
+                    },
+                    {
+                      "key": "phoneNumber",
+                      "value": "[\"+1234567890\", \"+0987654321\"]",
+                      "description": "🔢 Array of phone numbers - ⚠️ At least one required for booking (7-20 chars each)",
+                      "type": "text"
+                    },
+                    {
+                      "key": "city",
+                      "value": "Dubai",
+                      "description": "⚠️ Required for booking (2-100 chars)",
+                      "type": "text"
+                    },
+                    {
+                      "key": "area",
+                      "value": "Downtown",
+                      "description": "⚠️ Required for booking (2-100 chars)",
+                      "type": "text"
+                    },
+                    {
+                      "key": "street",
+                      "value": "Sheikh Zayed Road",
+                      "description": "⚠️ Required for booking (2-200 chars)",
+                      "type": "text"
+                    },
+                    {
+                      "key": "houseNumber",
+                      "value": "123",
+                      "description": "⚠️ Required for booking (1-20 chars)",
+                      "type": "text"
+                    },
+                    {
+                      "key": "nationality",
+                      "value": "Emirati",
+                      "description": "⚠️ Required for booking (2-50 chars)",
+                      "type": "text"
+                    },
+                    {
+                      "key": "passportImage",
+                      "value": "https://example.com/passport.jpg",
+                      "description": "⚠️ Required for booking - Passport/ID image URL",
+                      "type": "text"
+                    },
+                    {
+                      "key": "profileImage",
+                      "description": "📎 Optional profile image file upload",
+                      "type": "file"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/users",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "users"]
+                },
+                "description": "Update user profile with image upload support\n\n🍪 **Authentication Required** - Uses cookies (Customer role)\n\n**Field Categories:**\n- ⚠️ **Required for booking** - Needed when user books services\n- 🔧 **Optional** - Can be omitted\n- 📎 **File upload** - Use multipart/form-data\n- 🔢 **Array** - phoneNumber accepts multiple values\n\n**Legacy Support:**\n- primaryPhone & secondaryPhone still work (converted to phoneNumber array)"
+              }
+            },
+            {
+              "name": "Get Profile",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/users/profile",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "users", "profile"]
+                },
+                "description": "Get current user profile\n\n🍪 **Authentication Required** - Uses cookies (Customer role)"
+              }
+            },
+            {
+              "name": "Check Profile Completion",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/users/profile/completion",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "users", "profile", "completion"]
+                },
+                "description": "Check if user profile is complete for booking\n\n🍪 **Authentication Required** - Uses cookies (Customer role)\n\nChecks these required fields:\n- fullName\n- phoneNumber (at least one)\n- city\n- area\n- nationality"
+              }
+            },
+            {
+              "name": "Delete Account",
+              "request": {
+                "method": "DELETE",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/users",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "users"]
+                },
+                "description": "Delete user account (soft delete)\n\n🍪 **Authentication Required** - Uses cookies (Customer role)\n\n⚠️ **Warning:** This action cannot be undone\n\n🗑️ **Automatic cleanup:** Profile images are deleted from Cloudinary"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📊 Public Workers",
+      "description": "Public endpoints for browsing workers",
+      "item": [
+        {
+          "name": "Get All Workers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/workers",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "workers"]
+            },
+            "description": "Get all workers (public)\n\n🌍 **Public Route** - No authentication required"
+          }
+        },
+        {
+          "name": "Get Worker by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/workers/{{workerId}}",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "workers", "{{workerId}}"]
+            },
+            "description": "Get worker details by ID (public)\n\n🌍 **Public Route** - No authentication required"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💰 Payments",
+      "description": "Payment processing and management",
+      "item": [
+        {
+          "name": "Get Pricing Quote",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments/quote/{{workerId}}",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "payments", "quote", "{{workerId}}"]
+            },
+            "description": "Get pricing quote for worker booking\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Create Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {},
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workerId\": \"worker_id_here\",\n  \"paymentType\": \"deposit\",\n  \"region\": \"UAE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "payments"]
+            },
+            "description": "Create payment session\n\n**Required Fields:**\n- ✅ workerId (string)\n- ✅ paymentType (enum: 'deposit', 'full', 'remaining')\n- ✅ region (enum: 'UAE', 'Outside UAE')\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Get Remaining Payment",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments/remaining/{{depositPaymentId}}",
+              "host": ["{{DEV_URL}}"],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "remaining",
+                "{{depositPaymentId}}"
+              ]
+            },
+            "description": "Get remaining payment details after trial\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Payment Success",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments/success?session_id={{session_id}}",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "payments", "success"],
+              "query": [
+                {
+                  "key": "session_id",
+                  "value": "{{session_id}}"
+                }
+              ]
+            },
+            "description": "Handle payment success callback\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Get My Payments",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments/my-payments",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "payments", "my-payments"]
+            },
+            "description": "Get user's payment history\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💲 Public Pricing",
+      "description": "Public pricing information",
+      "item": [
+        {
+          "name": "Get Pricing by Region",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/pricing/region/{{region}}",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "pricing", "region", "{{region}}"]
+            },
+            "description": "Get pricing for specific region (public)\n\n🌍 **Public Route** - No authentication required\n\n**Path Parameters:**\n- region (enum: 'UAE', 'Outside UAE')"
+          }
+        },
+        {
+          "name": "Get Pricing Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/pricing/stats",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "pricing", "stats"]
+            },
+            "description": "Get pricing statistics (public)\n\n🌍 **Public Route** - No authentication required"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔔 Notifications",
+      "description": "User notification system",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/notifications",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "notifications"]
+            },
+            "description": "Get user notifications\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/notifications/unread-count",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "notifications", "unread-count"]
+            },
+            "description": "Get unread notifications count\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Mark as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/notifications/{{notificationId}}/read",
+              "host": ["{{DEV_URL}}"],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "{{notificationId}}",
+                "read"
+              ]
+            },
+            "description": "Mark notification as read\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/notifications/mark-all-read",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "notifications", "mark-all-read"]
+            },
+            "description": "Mark all notifications as read\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/notifications/{{notificationId}}",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "notifications", "{{notificationId}}"]
+            },
+            "description": "Delete notification\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        },
+        {
+          "name": "Test Notification",
+          "request": {
+            "method": "POST",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/notifications/test",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "notifications", "test"]
+            },
+            "description": "Test notification system\n\n🍪 **Authentication Required** - Uses cookies"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Companies",
+      "description": "Company registration, authentication, and management",
+      "item": [
+        {
+          "name": "Auth",
+          "description": "Company-specific authentication endpoints",
+          "item": [
+            {
+              "name": "Register Company",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "email",
+                      "value": "company@example.com",
+                      "description": "✅ Required - Company email address",
+                      "type": "text"
+                    },
+                    {
+                      "key": "password",
+                      "value": "password123",
+                      "description": "✅ Required - Password (min 8 characters)",
+                      "type": "text"
+                    },
+                    {
+                      "key": "companyName",
+                      "value": "ABC Corp",
+                      "description": "✅ Required - Company name",
+                      "type": "text"
+                    },
+                    {
+                      "key": "commercialLicensePhoto",
+                      "description": "📎 ✅ Required - Commercial license image file",
+                      "type": "file"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/companies/auth/register",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "companies", "auth", "register"]
+                },
+                "description": "Register new company account\n\n**Required Fields:**\n- ✅ email (valid email format)\n- ✅ password (min 8 characters)\n- ✅ companyName (company name)\n- 📎 ✅ commercialLicensePhoto (file upload)\n\n**Default Values:**\n- role: automatically set to 'company'\n- image: default company image if not provided"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Company Profile",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/companies/me",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "companies", "me"]
+            },
+            "description": "Get current company profile\n\n🍪 **Authentication Required** - Uses cookies (Company role)"
+          }
+        },
+        {
+          "name": "Update Company",
+          "request": {
+            "method": "PATCH",
+            "header": [{}],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "companyName",
+                  "value": "Updated Corp Name",
+                  "description": "🔧 Optional - New company name",
+                  "type": "text"
+                },
+                {
+                  "key": "commercialLicensePhoto",
+                  "description": "📎 🔧 Optional - New license photo (old one will be deleted)",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/companies/me",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "companies", "me"]
+            },
+            "description": "Update company profile\n\n🍪 **Authentication Required** - Uses cookies (Company role)\n\n**Auto-cleanup:** Old images are automatically deleted when new ones are uploaded"
+          }
+        },
+        {
+          "name": "Delete Company",
+          "request": {
+            "method": "DELETE",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/companies/me",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "companies", "me"]
+            },
+            "description": "Delete company account\n\n🍪 **Authentication Required** - Uses cookies (Company role)\n\n⚠️ **Warning:** This will also delete all company workers\n\n🗑️ **Cleanup:** All company and worker images deleted from Cloudinary"
+          }
+        },
+        {
+          "name": "Workers",
+          "description": "Worker management for companies",
+          "item": [
+            {
+              "name": "Create Worker",
+              "request": {
+                "method": "POST",
+                "header": [{}],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "pictureWorker",
+                      "description": "📎 ✅ Required - Worker profile photo",
+                      "type": "file"
+                    },
+                    {
+                      "key": "introductoryVideo",
+                      "description": "📎 🔧 Optional - Worker introduction video (recommended)",
+                      "type": "file"
+                    },
+                    {
+                      "key": "name",
+                      "value": "John Worker",
+                      "description": "✅ Required - Worker full name",
+                      "type": "text"
+                    },
+                    {
+                      "key": "specialization",
+                      "value": "Cleaning",
+                      "description": "✅ Required - Worker specialization/service type",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/companies/workers",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "companies", "workers"]
+                },
+                "description": "Create new worker for company\n\n🍪 **Authentication Required** - Uses cookies (Company role)\n\n**Required Fields:**\n- 📎 ✅ pictureWorker (image file)\n- ✅ name (worker name)\n- ✅ specialization (service type)\n\n**Optional Fields:**\n- 📎 🔧 introductoryVideo (video file)"
+              }
+            },
+            {
+              "name": "Get All Company Workers",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/companies/workers?page=1&limit=10",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "companies", "workers"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "🔧 Optional - Page number (default: 1)"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10",
+                      "description": "🔧 Optional - Items per page (default: 10)"
+                    }
+                  ]
+                },
+                "description": "Get all workers for current company\n\n🍪 **Authentication Required** - Uses cookies (Company role)\n\n**Query Parameters:**\n- page (number): Page number\n- limit (number): Items per page"
+              }
+            },
+            {
+              "name": "Get Single Worker",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/companies/workers/:workerId",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "companies", "workers", ":workerId"]
+                },
+                "description": "Get single worker details\n\n🍪 **Authentication Required** - Uses cookies (Company role)\n\n**URL Parameters:**\n- workerId (string): Worker ID"
+              }
+            },
+            {
+              "name": "Update Worker",
+              "request": {
+                "method": "PATCH",
+                "header": [{}],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "pictureWorker",
+                      "description": "📎 🔧 Optional - New worker photo (old one deleted)",
+                      "type": "file"
+                    },
+                    {
+                      "key": "introductoryVideo",
+                      "description": "📎 🔧 Optional - New intro video (old one deleted)",
+                      "type": "file"
+                    },
+                    {
+                      "key": "name",
+                      "value": "Updated Worker Name",
+                      "description": "🔧 Optional - Updated worker name",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/companies/workers/:workerId",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "companies", "workers", ":workerId"]
+                },
+                "description": "Update worker information\n\n🍪 **Authentication Required** - Uses cookies (Company role)\n\n**Auto-cleanup:** Old images/videos automatically deleted when new ones uploaded\n\n**URL Parameters:**\n- workerId (string): Worker ID"
+              }
+            },
+            {
+              "name": "Delete Worker",
+              "request": {
+                "method": "DELETE",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/companies/workers/:workerId",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "companies", "workers", ":workerId"]
+                },
+                "description": "Delete worker from company\n\n🍪 **Authentication Required** - Uses cookies (Company role)\n\n🗑️ **Cleanup:** Worker images and videos deleted from Cloudinary\n\n**URL Parameters:**\n- workerId (string): Worker ID"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "👷 Workers (Public)",
+      "description": "Public worker browsing endpoints",
+      "item": [
+        {
+          "name": "Get All Workers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/workers?page=1&limit=10&specialization=&location=",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "workers"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "🔧 Optional - Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "🔧 Optional - Items per page"
+                },
+                {
+                  "key": "specialization",
+                  "value": "",
+                  "description": "🔧 Optional - Filter by specialization"
+                },
+                {
+                  "key": "location",
+                  "value": "",
+                  "description": "🔧 Optional - Filter by location"
+                }
+              ]
+            },
+            "description": "Get all available workers (PUBLIC)\n\n🌍 **Public Route** - No authentication required\n\n**Query Parameters:**\n- page: Page number\n- limit: Items per page\n- specialization: Filter by service type\n- location: Filter by location"
+          }
+        },
+        {
+          "name": "Get Worker Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/workers/:workerId",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "workers", ":workerId"]
+            },
+            "description": "Get detailed worker information (PUBLIC)\n\n🌍 **Public Route** - No authentication required\n\n**URL Parameters:**\n- workerId (string): Worker ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💰 Payments",
+      "description": "Payment processing and management",
+      "item": [
+        {
+          "name": "Get Pricing Quote",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments/quote/:workerId",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "payments", "quote", ":workerId"]
+            },
+            "description": "Get pricing quote for worker booking\n\n🍪 **Authentication Required** - Uses cookies\n\n**URL Parameters:**\n- workerId (string): Worker ID\n\n**Returns:**\n- Pricing options for UAE/Outside UAE\n- Deposit, full payment options\n- Service details"
+          }
+        },
+        {
+          "name": "Create Payment Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {},
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workerId\": \"worker_id_here\",\n  \"paymentType\": \"deposit\",\n  \"amount\": 100,\n  \"currency\": \"AED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "payments"]
+            },
+            "description": "Create payment session (Stripe)\n\n🍪 **Authentication Required** - Uses cookies\n\n**Required Fields:**\n- ✅ workerId (string): Worker ID\n- ✅ paymentType (enum): 'deposit', 'full', 'remaining'\n- ✅ amount (number): Payment amount\n- ✅ currency (string): Currency code (AED, USD, etc.)\n\n**Payment Types:**\n- deposit: Initial booking deposit\n- full: Complete payment upfront\n- remaining: Final payment after trial"
+          }
+        },
+        {
+          "name": "Get Remaining Payment",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments/remaining/:depositPaymentId",
+              "host": ["{{DEV_URL}}"],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "remaining",
+                ":depositPaymentId"
+              ]
+            },
+            "description": "Get remaining payment details after trial period\n\n🍪 **Authentication Required** - Uses cookies\n\n**URL Parameters:**\n- depositPaymentId (string): Original deposit payment ID\n\n**Use Case:** After user pays deposit and completes trial, get remaining amount"
+          }
+        },
+        {
+          "name": "Payment Success Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments/success?session_id=stripe_session_id",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "payments", "success"],
+              "query": [
+                {
+                  "key": "session_id",
+                  "value": "stripe_session_id",
+                  "description": "✅ Required - Stripe session ID from redirect"
+                }
+              ]
+            },
+            "description": "Handle successful payment callback from Stripe\n\n🌍 **Public Route** - Called by Stripe\n\n**Query Parameters:**\n- session_id (string): Stripe session ID\n\n**Note:** This is typically called automatically by Stripe after successful payment"
+          }
+        },
+        {
+          "name": "Get My Payments",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/payments/my-payments?page=1&limit=10",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "payments", "my-payments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "🔧 Optional - Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "🔧 Optional - Items per page"
+                }
+              ]
+            },
+            "description": "Get user's payment history\n\n🍪 **Authentication Required** - Uses cookies\n\n**Query Parameters:**\n- page: Page number\n- limit: Items per page\n\n**Returns:** List of user's payments with status, amounts, dates"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💲 Pricing (Public)",
+      "description": "Pricing information endpoints",
+      "item": [
+        {
+          "name": "Get Pricing by Region",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/pricing/region/:region",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "pricing", "region", ":region"]
+            },
+            "description": "Get pricing for specific region (PUBLIC)\n\n🌍 **Public Route** - No authentication required\n\n**URL Parameters:**\n- region (string): Region name (e.g., 'UAE', 'International')\n\n**Use Case:** Display pricing to users before registration"
+          }
+        },
+        {
+          "name": "Get Pricing Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/pricing/stats",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "pricing", "stats"]
+            },
+            "description": "Get pricing statistics and analytics (PUBLIC)\n\n🌍 **Public Route** - No authentication required\n\n**Returns:** Average pricing, trends, regional comparisons"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔔 Notifications",
+      "description": "User notification management",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{}],
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/notifications?page=1&limit=10&read=false",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "notifications"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "🔧 Optional - Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "🔧 Optional - Items per page"
+                },
+                {
+                  "key": "read",
+                  "value": "false",
+                  "description": "🔧 Optional - Filter by read status (true/false)"
+                }
+              ]
+            },
+            "description": "Get user notifications\n\n🍪 **Authentication Required** - Uses cookies\n\n**Query Parameters:**\n- page: Page number\n- limit: Items per page\n- read: Filter by read status"
+          }
+        },
+        {
+          "name": "Mark Notifications as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {},
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notificationIds\": [\"notification_id_1\", \"notification_id_2\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/notifications/mark-read",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "notifications", "mark-read"]
+            },
+            "description": "Mark notifications as read\n\n🍪 **Authentication Required** - Uses cookies\n\n**Required Fields:**\n- ✅ notificationIds (array): Array of notification IDs to mark as read"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍💼 Admin",
+      "description": "Admin management endpoints",
+      "item": [
+        {
+          "name": "Add Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {},
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"Admin Name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{DEV_URL}}/api/v1/admins/dashboard/add-admin",
+              "host": ["{{DEV_URL}}"],
+              "path": ["api", "v1", "admins", "dashboard", "add-admin"]
+            },
+            "description": "Create new admin account\n\n🍪 **Authentication Required** - Uses cookies (Admin role)\n\n**Required Fields:**\n- ✅ email (string, valid email format)\n- ✅ password (string, min 8 characters)\n- ✅ fullName (string)"
+          }
+        },
+        {
+          "name": "Company Management",
+          "description": "Admin company management",
+          "item": [
+            {
+              "name": "Get All Companies",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/dashboard/companies?page=1&limit=10&status=&search=",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "admins", "dashboard", "companies"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "🔧 Page number"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10",
+                      "description": "🔧 Items per page"
+                    },
+                    {
+                      "key": "status",
+                      "value": "",
+                      "description": "🔧 Filter by status (pending, approved, rejected)"
+                    },
+                    {
+                      "key": "search",
+                      "value": "",
+                      "description": "🔧 Search by company name or email"
+                    }
+                  ]
+                },
+                "description": "Get all companies with filtering\n\n🍪 **Authentication Required** - Uses cookies (Admin role)\n\n**Query Parameters:**\n- page: Page number\n- limit: Items per page\n- status: Filter by approval status\n- search: Search by name or email"
+              }
+            },
+            {
+              "name": "Get Pending Companies",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/dashboard/companies/pending",
+                  "host": ["{{DEV_URL}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admins",
+                    "dashboard",
+                    "companies",
+                    "pending"
+                  ]
+                },
+                "description": "Get companies pending approval\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            },
+            {
+              "name": "Get Company by ID",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/dashboard/companies/{{companyId}}",
+                  "host": ["{{DEV_URL}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admins",
+                    "dashboard",
+                    "companies",
+                    "{{companyId}}"
+                  ]
+                },
+                "description": "Get specific company details\n\n🍪 **Authentication Required** - Uses cookies (Admin role)\n\n**Path Parameters:**\n- companyId (string): Company ID"
+              }
+            },
+            {
+              "name": "Approve Company",
+              "request": {
+                "method": "PATCH",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/dashboard/companies/:companyId/approve",
+                  "host": ["{{DEV_URL}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admins",
+                    "dashboard",
+                    "companies",
+                    ":companyId",
+                    "approve"
+                  ]
+                },
+                "description": "Approve company registration\n\n🍪 **Authentication Required** - Uses cookies (Admin role)\n\n**URL Parameters:**\n- companyId (string): Company ID"
+              }
+            },
+            {
+              "name": "Reject Company",
+              "request": {
+                "method": "PATCH",
+                "header": [{}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"rejectionReason\": \"Incomplete documentation\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/dashboard/companies/:companyId/reject",
+                  "host": ["{{DEV_URL}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admins",
+                    "dashboard",
+                    "companies",
+                    ":companyId",
+                    "reject"
+                  ]
+                },
+                "description": "Reject company registration\n\n🍪 **Authentication Required** - Uses cookies (Admin role)\n\n**URL Parameters:**\n- companyId (string): Company ID\n\n**Optional Fields:**\n- 🔧 rejectionReason (string): Reason for rejection"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Worker Management",
+          "description": "Admin worker management",
+          "item": [
+            {
+              "name": "Get All Workers",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/workers?page=1&limit=10&status=&search=",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "admins", "workers"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "status",
+                      "value": ""
+                    },
+                    {
+                      "key": "search",
+                      "value": ""
+                    }
+                  ]
+                },
+                "description": "Get all workers with filtering\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            },
+            {
+              "name": "Get Pending Workers",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/workers/pending",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "admins", "workers", "pending"]
+                },
+                "description": "Get workers pending approval\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            },
+            {
+              "name": "Get Worker by ID",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/dashboard/workers/{{workerId}}",
+                  "host": ["{{DEV_URL}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admins",
+                    "dashboard",
+                    "workers",
+                    "{{workerId}}"
+                  ]
+                },
+                "description": "Get specific worker details\n\n🍪 **Authentication Required** - Uses cookies (Admin role)\n\n**Path Parameters:**\n- workerId (string): Worker ID"
+              }
+            },
+            {
+              "name": "Approve Worker",
+              "request": {
+                "method": "PATCH",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/workers/:workerId/approve",
+                  "host": ["{{DEV_URL}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admins",
+                    "workers",
+                    ":workerId",
+                    "approve"
+                  ]
+                },
+                "description": "Approve worker\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            },
+            {
+              "name": "Reject Worker",
+              "request": {
+                "method": "PATCH",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/workers/:workerId/reject",
+                  "host": ["{{DEV_URL}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admins",
+                    "workers",
+                    ":workerId",
+                    "reject"
+                  ]
+                },
+                "description": "Reject worker\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Payment Management",
+          "description": "Admin payment management and deployment tracking",
+          "item": [
+            {
+              "name": "Get All Payments",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/payments",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "admins", "payments"]
+                },
+                "description": "Get all payments with deployment information\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            },
+            {
+              "name": "Get Payment Statistics",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/payments/stats",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "admins", "payments", "stats"]
+                },
+                "description": "Get deployment statistics\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            },
+            {
+              "name": "Get Payment Deployment Details",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/payments/{{paymentId}}",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "admins", "payments", "{{paymentId}}"]
+                },
+                "description": "Get specific payment deployment details\n\n🍪 **Authentication Required** - Uses cookies (Admin role)\n\n**Path Parameters:**\n- paymentId (string): Payment ID"
+              }
+            },
+            {
+              "name": "Update Worker Deployment Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {},
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"deploymentStatus\": \"deployed\",\n  \"deploymentNotes\": \"Worker successfully deployed\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/admins/payments/{{paymentId}}/deployment",
+                  "host": ["{{DEV_URL}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admins",
+                    "payments",
+                    "{{paymentId}}",
+                    "deployment"
+                  ]
+                },
+                "description": "Update worker deployment status\n\n🍪 **Authentication Required** - Uses cookies (Admin role)\n\n**Required Fields:**\n- ✅ deploymentStatus (enum: 'pending', 'in_progress', 'deployed', 'cancelled')\n\n**Optional Fields:**\n- 🔧 deploymentNotes (string): Additional notes"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pricing Management",
+          "description": "Admin pricing management",
+          "item": [
+            {
+              "name": "Create Pricing",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {},
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"region\": \"UAE\",\n  \"serviceType\": \"Cleaning\",\n  \"basePrice\": 100,\n  \"currency\": \"AED\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/pricing",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "pricing"]
+                },
+                "description": "Create new pricing entry\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            },
+            {
+              "name": "Update Pricing",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {},
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"basePrice\": 120\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/pricing/:pricingId",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "pricing", ":pricingId"]
+                },
+                "description": "Update pricing entry\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            },
+            {
+              "name": "Delete Pricing",
+              "request": {
+                "method": "DELETE",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/pricing/:pricingId",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "pricing", ":pricingId"]
+                },
+                "description": "Delete pricing entry\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            },
+            {
+              "name": "Get All Pricing",
+              "request": {
+                "method": "GET",
+                "header": [{}],
+                "url": {
+                  "raw": "{{DEV_URL}}/api/v1/pricing",
+                  "host": ["{{DEV_URL}}"],
+                  "path": ["api", "v1", "pricing"]
+                },
+                "description": "Get all pricing entries\n\n🍪 **Authentication Required** - Uses cookies (Admin role)"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "DEV_URL",
+      "value": "http://localhost:3020",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    }
+  ]
+}

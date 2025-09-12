@@ -2,6 +2,7 @@ import catchAsync from '../../utils/catchAsync.js';
 import AppError from '../../utils/appError.js';
 import companyModel from '../../models/companyModel.js';
 import NotificationService from '../../services/notificationService.js';
+import userModel from '../../models/userModel.js';
 
 export default catchAsync(async (req, res, next) => {
   const userId = req.user.id;
@@ -33,7 +34,12 @@ export default catchAsync(async (req, res, next) => {
       runValidators: true,
     })
     .select('-approvedBy -approvalDate   -updatedAt -__v')
-    .populate('user', 'email');
+    .populate('user', 'email fullName image');
+  await userModel.findOneAndUpdate(
+    { _id: userId },
+    { fullName: updateData.companyName, image: updateData.image },
+    { new: true, runValidators: true }
+  );
 
   if (!company) {
     return next(new AppError('Company not found for this user', 404));

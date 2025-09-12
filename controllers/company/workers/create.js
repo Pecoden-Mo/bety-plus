@@ -6,6 +6,7 @@ import AppError from '../../../utils/appError.js';
 export default catchAsync(async (req, res, next) => {
   const userId = req.user.id;
   const company = await companyModel.findOne({ user: userId });
+
   if (!company) {
     return next(new AppError('Company not found', 404));
   }

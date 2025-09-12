@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Phone Number Array Update</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .test-section {
+        border: 1px solid #ddd;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+      }
+      .result {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      input {
+        margin: 5px 0;
+        padding: 8px;
+        width: 100%;
+        max-width: 300px;
+      }
+      .phone-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .phone-input-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .remove-btn {
+        background-color: #dc3545;
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test Phone Number Array Update</h1>
+
+    <div class="test-section">
+      <h2>Phone Number Schema Info</h2>
+      <p>In the user schema, <code>phoneNumber</code> is defined as:</p>
+      <pre>
+phoneNumber: {
+  type: [String],  // Array of strings
+}</pre
+      >
+      <p>
+        This allows users to have multiple phone numbers stored as an array.
+      </p>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 1: Update with Phone Number Array</h2>
+      <div class="phone-inputs" id="phoneInputs">
+        <div class="phone-input-group">
+          <input type="text" placeholder="Phone number 1" class="phone-input" />
+          <button
+            type="button"
+            class="remove-btn"
+            onclick="removePhoneInput(this)"
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+      <button type="button" onclick="addPhoneInput()">Add Phone Number</button>
+      <br /><br />
+      <button onclick="testPhoneArrayUpdate()">Test Phone Array Update</button>
+      <div id="arrayResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 2: Legacy Support (Primary + Secondary)</h2>
+      <input type="text" id="primaryPhone" placeholder="Primary Phone" />
+      <input type="text" id="secondaryPhone" placeholder="Secondary Phone" />
+      <br /><br />
+      <button onclick="testLegacyUpdate()">Test Legacy Phone Update</button>
+      <div id="legacyResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 3: Single Phone Number</h2>
+      <input type="text" id="singlePhone" placeholder="Single Phone Number" />
+      <br /><br />
+      <button onclick="testSinglePhoneUpdate()">
+        Test Single Phone Update
+      </button>
+      <div id="singleResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 4: Get Current User Profile</h2>
+      <button onclick="getCurrentProfile()">
+        Get Profile (Check Phone Numbers)
+      </button>
+      <div id="profileResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test 5: Profile Completion Check</h2>
+      <button onclick="checkProfileCompletion()">
+        Check Profile Completion
+      </button>
+      <div id="completionResult" class="result"></div>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:3020/api';
+
+      const getAuthToken = () =>
+        localStorage.getItem('authToken') || 'your-token-here';
+
+      function addPhoneInput() {
+        const container = document.getElementById('phoneInputs');
+        const div = document.createElement('div');
+        div.className = 'phone-input-group';
+        div.innerHTML = `
+                <input type="text" placeholder="Phone number ${container.children.length + 1}" class="phone-input">
+                <button type="button" class="remove-btn" onclick="removePhoneInput(this)">Remove</button>
+            `;
+        container.appendChild(div);
+      }
+
+      function removePhoneInput(button) {
+        const container = document.getElementById('phoneInputs');
+        if (container.children.length > 1) {
+          button.parentElement.remove();
+        }
+      }
+
+      function getPhoneNumbers() {
+        const inputs = document.querySelectorAll('.phone-input');
+        return Array.from(inputs)
+          .map((input) => input.value.trim())
+          .filter((phone) => phone !== '');
+      }
+
+      async function testPhoneArrayUpdate() {
+        const phoneNumbers = getPhoneNumbers();
+
+        if (phoneNumbers.length === 0) {
+          document.getElementById('arrayResult').innerHTML =
+            '<p>Please enter at least one phone number</p>';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/users`, {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${getAuthToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phoneNumber: phoneNumbers,
+            }),
+          });
+
+          const result = await response.json();
+          document.getElementById('arrayResult').innerHTML = `
+                    <h3>Phone Array Update Result:</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Phone Numbers Sent:</strong> ${JSON.stringify(phoneNumbers)}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+        } catch (error) {
+          document.getElementById('arrayResult').innerHTML =
+            `<p>Error: ${error.message}</p>`;
+        }
+      }
+
+      async function testLegacyUpdate() {
+        const primaryPhone = document
+          .getElementById('primaryPhone')
+          .value.trim();
+        const secondaryPhone = document
+          .getElementById('secondaryPhone')
+          .value.trim();
+
+        if (!primaryPhone && !secondaryPhone) {
+          document.getElementById('legacyResult').innerHTML =
+            '<p>Please enter at least one phone number</p>';
+          return;
+        }
+
+        const requestBody = {};
+        if (primaryPhone) requestBody.primaryPhone = primaryPhone;
+        if (secondaryPhone) requestBody.secondaryPhone = secondaryPhone;
+
+        try {
+          const response = await fetch(`${API_BASE}/users`, {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${getAuthToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+          });
+
+          const result = await response.json();
+          document.getElementById('legacyResult').innerHTML = `
+                    <h3>Legacy Phone Update Result:</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Primary Phone:</strong> ${primaryPhone || 'Not provided'}</p>
+                    <p><strong>Secondary Phone:</strong> ${secondaryPhone || 'Not provided'}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+        } catch (error) {
+          document.getElementById('legacyResult').innerHTML =
+            `<p>Error: ${error.message}</p>`;
+        }
+      }
+
+      async function testSinglePhoneUpdate() {
+        const singlePhone = document.getElementById('singlePhone').value.trim();
+
+        if (!singlePhone) {
+          document.getElementById('singleResult').innerHTML =
+            '<p>Please enter a phone number</p>';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/users`, {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${getAuthToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phoneNumber: singlePhone, // Send as string, should be converted to array
+            }),
+          });
+
+          const result = await response.json();
+          document.getElementById('singleResult').innerHTML = `
+                    <h3>Single Phone Update Result:</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Phone Number:</strong> ${singlePhone}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+        } catch (error) {
+          document.getElementById('singleResult').innerHTML =
+            `<p>Error: ${error.message}</p>`;
+        }
+      }
+
+      async function getCurrentProfile() {
+        try {
+          const response = await fetch(`${API_BASE}/users/profile`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${getAuthToken()}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          const result = await response.json();
+          document.getElementById('profileResult').innerHTML = `
+                    <h3>Current Profile:</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Phone Numbers:</strong> ${JSON.stringify(result.data?.user?.phoneNumber || 'Not set')}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+        } catch (error) {
+          document.getElementById('profileResult').innerHTML =
+            `<p>Error: ${error.message}</p>`;
+        }
+      }
+
+      async function checkProfileCompletion() {
+        try {
+          const response = await fetch(`${API_BASE}/users/profile/completion`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${getAuthToken()}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          const result = await response.json();
+          document.getElementById('completionResult').innerHTML = `
+                    <h3>Profile Completion Check:</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Is Complete:</strong> ${result.data?.isComplete || 'Unknown'}</p>
+                    <p><strong>Completion %:</strong> ${result.data?.completionPercentage || 'Unknown'}%</p>
+                    <p><strong>Missing Fields:</strong> ${JSON.stringify(result.data?.missingFields || [])}</p>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+        } catch (error) {
+          document.getElementById('completionResult').innerHTML =
+            `<p>Error: ${error.message}</p>`;
+        }
+      }
+
+      // Set example values
+      document.getElementById('primaryPhone').value = '+1234567890';
+      document.getElementById('secondaryPhone').value = '+0987654321';
+      document.getElementById('singlePhone').value = '+1122334455';
+      document.querySelector('.phone-input').value = '+1111111111';
+    </script>
+  </body>
+</html>

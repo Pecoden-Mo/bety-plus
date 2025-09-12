@@ -23,7 +23,7 @@ app.use(morgan('dev'));
 
 app.use(
   cors({
-    origin: '*',
+    origin: ['http://127.0.0.1:5500', 'http://localhost:5500'],
     credentials: true, // Allow cookies to be sent
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

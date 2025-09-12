@@ -95,7 +95,7 @@ const workerSchema = new mongoose.Schema({
   },
   pictureWorker: {
     type: String,
-    // required: true,
+    required: true,
   },
   introductoryVideo: String,
   availability: {

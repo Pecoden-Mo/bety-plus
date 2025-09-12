@@ -1,4 +1,5 @@
 import { check } from 'express-validator';
+
 import validator from '../../middleware/expressValidator.js';
 
 const register = [
@@ -14,12 +15,7 @@ const register = [
     .withMessage('Password is required')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long'),
-  check('confirmPassword').custom((value, { req }) => {
-    if (value !== req.body.password) {
-      throw new Error('Passwords do not match');
-    }
-    return true;
-  }),
+
   validator,
 ];
 
@@ -27,17 +23,16 @@ const update = [
   check().custom((value, { req }) => {
     const allowed = [
       'fullName',
-      'primaryPhone',
-      'secondaryPhone',
+      'phoneNumber',
+      'primaryPhone', // Keep for backward compatibility
+      'secondaryPhone', // Keep for backward compatibility
       'city',
       'area',
       'street',
       'image',
       'nationality',
       'houseNumber',
-      'apartmentNumber',
-      'emirate',
-      'idPassportImage',
+      'passportImage',
     ];
     const hasAny = allowed.some(
       (f) =>
@@ -55,6 +50,27 @@ const update = [
     .trim()
     .isLength({ min: 2, max: 100 })
     .withMessage('Your name must be between 2 and 100 characters'),
+  check('phoneNumber')
+    .optional()
+    .custom((value) => {
+      if (Array.isArray(value)) {
+        // If it's an array, validate each phone number
+        for (const phone of value) {
+          if (typeof phone !== 'string' || phone.trim().length < 7 || phone.trim().length > 20) {
+            throw new Error('Each phone number must be a string between 7 and 20 characters');
+          }
+        }
+        return true;
+      } else if (typeof value === 'string') {
+        // If it's a string, validate as single phone number
+        if (value.trim().length < 7 || value.trim().length > 20) {
+          throw new Error('Phone number must be between 7 and 20 characters');
+        }
+        return true;
+      } else {
+        throw new Error('Phone number must be a string or array of strings');
+      }
+    }),
   check('primaryPhone')
     .optional()
     .isString()
@@ -76,13 +92,6 @@ const update = [
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage('Nationality must be between 2 and 50 characters'),
-  check('emirate')
-    .optional()
-    .isString()
-    .withMessage('Emirate must be a string')
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('Emirate must be between 2 and 50 characters'),
   check('houseNumber')
     .optional()
     .isString()
@@ -90,17 +99,10 @@ const update = [
     .trim()
     .isLength({ min: 1, max: 20 })
     .withMessage('House number must be between 1 and 20 characters'),
-  check('apartmentNumber')
+  check('passportImage')
     .optional()
     .isString()
-    .withMessage('Apartment number must be a string')
-    .trim()
-    .isLength({ min: 1, max: 20 })
-    .withMessage('Apartment number must be between 1 and 20 characters'),
-  check('idPassportImage')
-    .optional()
-    .isString()
-    .withMessage('ID/Passport image must be a string')
+    .withMessage('Passport image must be a string')
     .trim(),
   check('city')
     .optional()

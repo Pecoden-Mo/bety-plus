@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Integrated Upload Examples</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .form-section {
+        border: 1px solid #ddd;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Integrated Upload Examples</h1>
+
+    <!-- Company Registration Form -->
+    <div class="form-section">
+      <h2>Company Registration</h2>
+      <form id="companyForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+
+        <div class="form-group">
+          <label for="companyName">Company Name:</label>
+          <input type="text" id="companyName" name="companyName" required />
+        </div>
+
+        <div class="form-group">
+          <label for="commercialLicenseNumber">License Number:</label>
+          <input
+            type="text"
+            id="commercialLicenseNumber"
+            name="commercialLicenseNumber"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="commercialLicensePhoto">Commercial License Photo:</label>
+          <input
+            type="file"
+            id="commercialLicensePhoto"
+            name="commercialLicensePhoto"
+            accept="image/*"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="licensingAuthority">Licensing Authority:</label>
+          <input
+            type="text"
+            id="licensingAuthority"
+            name="licensingAuthority"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="headOfficeAddress">Head Office Address:</label>
+          <textarea
+            id="headOfficeAddress"
+            name="headOfficeAddress"
+            required
+          ></textarea>
+        </div>
+
+        <button type="submit">Register Company</button>
+      </form>
+      <div id="companyResult"></div>
+    </div>
+
+    <!-- Worker Creation Form -->
+    <div class="form-section">
+      <h2>Create Worker</h2>
+      <form id="workerForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="fullName">Full Name:</label>
+          <input type="text" id="fullName" name="fullName" required />
+        </div>
+
+        <div class="form-group">
+          <label for="age">Age:</label>
+          <input type="number" id="age" name="age" required />
+        </div>
+
+        <div class="form-group">
+          <label for="nationality">Nationality:</label>
+          <input type="text" id="nationality" name="nationality" required />
+        </div>
+
+        <div class="form-group">
+          <label for="price">Price:</label>
+          <input type="number" id="price" name="price" required />
+        </div>
+
+        <div class="form-group">
+          <label for="pictureWorker">Worker Photo:</label>
+          <input
+            type="file"
+            id="pictureWorker"
+            name="pictureWorker"
+            accept="image/*"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="introductoryVideo">Introductory Video:</label>
+          <input
+            type="file"
+            id="introductoryVideo"
+            name="introductoryVideo"
+            accept="video/*"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="skills">Skills:</label>
+          <select id="skills" name="skills" multiple>
+            <option value="cooking">Cooking</option>
+            <option value="cleaning">Cleaning</option>
+            <option value="elderly care">Elderly Care</option>
+            <option value="childcare">Childcare</option>
+            <option value="shopping">Shopping</option>
+          </select>
+        </div>
+
+        <button type="submit">Create Worker</button>
+      </form>
+      <div id="workerResult"></div>
+    </div>
+
+    <!-- User Profile Update Form -->
+    <div class="form-section">
+      <h2>Update User Profile</h2>
+      <form id="userForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="firstName">First Name:</label>
+          <input type="text" id="firstName" name="firstName" />
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name:</label>
+          <input type="text" id="lastName" name="lastName" />
+        </div>
+
+        <div class="form-group">
+          <label for="profileImage">Profile Image:</label>
+          <input
+            type="file"
+            id="profileImage"
+            name="profileImage"
+            accept="image/*"
+          />
+        </div>
+
+        <button type="submit">Update Profile</button>
+      </form>
+      <div id="userResult"></div>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:3000/api'; // Adjust to your server URL
+
+      // Get auth token (implement your login system)
+      const getAuthToken = () => {
+        return localStorage.getItem('authToken') || 'your-jwt-token-here';
+      };
+
+      // Company registration
+      document
+        .getElementById('companyForm')
+        .addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData(e.target);
+
+          try {
+            const response = await fetch(
+              `${API_BASE}/companies/auth/register`,
+              {
+                method: 'POST',
+                body: formData, // No Content-Type header needed for FormData
+              }
+            );
+
+            const result = await response.json();
+            document.getElementById('companyResult').innerHTML = `
+                    <h3>Result:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+          } catch (error) {
+            document.getElementById('companyResult').innerHTML = `
+                    <h3>Error:</h3>
+                    <p>${error.message}</p>
+                `;
+          }
+        });
+
+      // Worker creation
+      document
+        .getElementById('workerForm')
+        .addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData(e.target);
+
+          try {
+            const response = await fetch(`${API_BASE}/companies/workers`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${getAuthToken()}`,
+              },
+              body: formData,
+            });
+
+            const result = await response.json();
+            document.getElementById('workerResult').innerHTML = `
+                    <h3>Result:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+          } catch (error) {
+            document.getElementById('workerResult').innerHTML = `
+                    <h3>Error:</h3>
+                    <p>${error.message}</p>
+                `;
+          }
+        });
+
+      // User profile update
+      document
+        .getElementById('userForm')
+        .addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData(e.target);
+
+          try {
+            const response = await fetch(`${API_BASE}/users`, {
+              method: 'PATCH',
+              headers: {
+                Authorization: `Bearer ${getAuthToken()}`,
+              },
+              body: formData,
+            });
+
+            const result = await response.json();
+            document.getElementById('userResult').innerHTML = `
+                    <h3>Result:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+          } catch (error) {
+            document.getElementById('userResult').innerHTML = `
+                    <h3>Error:</h3>
+                    <p>${error.message}</p>
+                `;
+          }
+        });
+    </script>
+  </body>
+</html>

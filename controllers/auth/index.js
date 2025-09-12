@@ -4,6 +4,7 @@ import resetPassword from './resetPassword.js';
 import changePassword from './changePassword.js';
 import login from './login.js';
 import logout from './logout.js';
+import getMe from './getMe.js';
 
 export default {
   forgotPassword,
@@ -11,4 +12,5 @@ export default {
   changePassword,
   login,
   logout,
+  getMe,
 };

@@ -3,3 +3,4 @@ node_modules/
 simple-test.html
 ecosystem.config.cjs
 logs/
+dev/

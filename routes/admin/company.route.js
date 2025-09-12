@@ -4,6 +4,7 @@ import {
   rejectCompany,
   getPendingCompanies,
   getAllCompanies,
+  getCompany,
 } from '../../controllers/admin/company.js';
 // import {} from "../../"
 import { isAuthenticated } from '../../middleware/authMiddleware.js';
@@ -15,7 +16,9 @@ router.use(isAuthenticated);
 
 // Admin company management routes
 router.get('/', getAllCompanies);
-router.get('/pending', getPendingCompanies); // not imported in the previous code
+router.get('/pending', getPendingCompanies);
+
+router.get('/:id', getCompany);
 router.patch('/:id/approve', approveCompany);
 router.patch('/:id/reject', rejectCompany);
 // toggle status of a company
